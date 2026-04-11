@@ -55,14 +55,40 @@ const tools = [
     status: 'live',
   },
   {
+    id: 'ghl-funnel-planner',
+    platform: 'GHL',
+    name: 'Funnel Planner',
+    tagline: 'Plan your complete GHL sales funnel strategy through conversation — every stage mapped out.',
+    icon: '🗺',
+    accent: '#3B82F6',
+    accentSoft: 'rgba(59,130,246,0.12)',
+    accentBorder: 'rgba(59,130,246,0.25)',
+    chips: ['Funnel strategy', 'Email sequences', 'Offer mapping', 'Full funnel view'],
+    path: '/ghl-funnel-planner',
+    status: 'live',
+  },
+  {
+    id: 'kajabi-funnel-planner',
+    platform: 'Kajabi',
+    name: 'Funnel Planner',
+    tagline: 'Plan your complete Kajabi funnel strategy — from freebie to offer, every step mapped out.',
+    icon: '🗺',
+    accent: '#A855F7',
+    accentSoft: 'rgba(168,85,247,0.12)',
+    accentBorder: 'rgba(168,85,247,0.25)',
+    chips: ['Funnel strategy', 'Kajabi pipelines', 'Offer mapping', 'Full funnel view'],
+    path: '/kajabi-funnel-planner',
+    status: 'live',
+  },
+  {
     id: 'ghl-site-builder',
     platform: 'GHL',
     name: 'Site Builder',
     tagline: 'Design a complete GHL website — homepage, about, services, and more — in one conversation.',
     icon: '🌐',
-    accent: '#3B82F6',
-    accentSoft: 'rgba(59,130,246,0.12)',
-    accentBorder: 'rgba(59,130,246,0.25)',
+    accent: '#F59E0B',
+    accentSoft: 'rgba(245,158,11,0.12)',
+    accentBorder: 'rgba(245,158,11,0.25)',
     chips: ['Homepage', 'About page', 'Services', 'Contact'],
     path: '/ghl-site-builder',
     status: 'coming-soon',
@@ -73,9 +99,9 @@ const tools = [
     name: 'Site Builder',
     tagline: 'Design your full Kajabi website — every page planned and briefed in a single session.',
     icon: '🌐',
-    accent: '#A855F7',
-    accentSoft: 'rgba(168,85,247,0.12)',
-    accentBorder: 'rgba(168,85,247,0.25)',
+    accent: '#EC4899',
+    accentSoft: 'rgba(236,72,153,0.12)',
+    accentBorder: 'rgba(236,72,153,0.25)',
     chips: ['Homepage', 'About page', 'Coaching page', 'Blog'],
     path: '/kajabi-site-builder',
     status: 'coming-soon',
@@ -202,7 +228,7 @@ export default function Dashboard() {
           }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00C8A0', boxShadow: '0 0 8px #00C8A0' }} />
             <span style={{ fontSize: 13, color: 'rgba(240,234,248,0.35)' }}>
-              All tools are live and ready to use
+              6 tools live · 2 coming soon
             </span>
           </div>
         </div>
