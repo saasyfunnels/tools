@@ -1,0 +1,47 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0D0D0D;
+  --surf: #111111;
+  --card: #161616;
+  --border: rgba(255,255,255,0.08);
+  --border-accent: rgba(107,53,200,0.3);
+  --text: #F0EAF8;
+  --muted: rgba(240,234,248,0.45);
+  --dim: rgba(240,234,248,0.28);
+  --pink: #F4547A;
+  --purple: #6B35C8;
+  --orange: #FF6B2B;
+  --teal: #00C8A0;
+  --sf-gradient: linear-gradient(135deg, #F4547A, #6B35C8);
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 2px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-fadeUp { animation: fadeUp 0.5s ease forwards; }
+.animate-fadeIn { animation: fadeIn 0.4s ease forwards; }
