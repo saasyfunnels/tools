@@ -78,7 +78,7 @@ If the client wants a funnel, plan ALL pages upfront before designing:
 When you have all information needed, say exactly:
 "Perfect — I have everything I need to design your page! Let me put this together now."
 
-Then output ONLY the JSON below.
+Then output ONLY the JSON below — wrapped in ```json and ``` markers exactly as shown. No other text after the closing ```.
 
 OUTPUT FORMAT:
 \`\`\`json
@@ -524,7 +524,14 @@ export default function App() {
   useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},[messages,loading]);
 
   const parseJSON = text => {
+    // Try fenced ```json ... ``` block
     try { const m=text.match(/```json\s*([\s\S]*?)```/); if(m) return JSON.parse(m[1]); } catch(e){}
+    // Try fenced ``` ... ``` block (no language tag)
+    try { const m=text.match(/```\s*([\s\S]*?)```/); if(m) { const parsed=JSON.parse(m[1]); if(parsed.projectName) return parsed; } } catch(e){}
+    // Try bare JSON starting with { and containing projectName
+    try { const m=text.match(/(\{[\s\S]*"projectName"[\s\S]*\})/); if(m) return JSON.parse(m[1]); } catch(e){}
+    // Try finding the first { to last } as JSON
+    try { const start=text.indexOf("{"); const end=text.lastIndexOf("}"); if(start>-1&&end>start){ const parsed=JSON.parse(text.slice(start,end+1)); if(parsed.projectName) return parsed; } } catch(e){}
     return null;
   };
 
