@@ -657,7 +657,10 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
     if (m.role==="assistant") {
       let content = m.content;
       content = content.replace(/```json[\s\S]*?```/g, "").trim();
-      if (content.includes('"projectName"')) {
+      content = content.replace(/```[\s\S]*?```/g, "").trim();
+      const jsonKeys = ['"projectName"', '"pageType"', '"isMultiPage"', '"sections"'];
+      const hasJSON = jsonKeys.some(k => content.includes(k));
+      if (hasJSON) {
         const start = content.indexOf("{");
         const end = content.lastIndexOf("}");
         if (start > -1 && end > start) {
@@ -665,7 +668,7 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
         }
       }
       content = content.replace(/^json\s*/i, "").trim();
-      if (!content) content = "✦ Your page design is ready — see below!";
+      if (!content || content.length < 3) content = "✦ Your page design is ready — see below!";
       return {...m, content};
     }
     return m;
