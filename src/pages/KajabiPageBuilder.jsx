@@ -707,7 +707,9 @@ Images found on page: ${branding.images?.slice(0,8).join(", ") || "none detected
         if (jS > -1 && jE > jS) displayReply = (displayReply.slice(0, jS) + displayReply.slice(jE + 1)).trim();
       }
       displayReply = displayReply.replace(/^json\s*/i, "").trim();
-      if (!displayReply || displayReply.length < 3) displayReply = "✦ Your page design is ready — see below!";content:reply}];
+      if (!displayReply || displayReply.length < 3) displayReply = "✦ Your page design is ready — see below!";
+      const aMsg = { role:"assistant", content:displayReply };
+      historyRef.current = [...newHist, {role:"assistant", content:reply}];
       setMessages(prev=>[...prev,aMsg]);
       const parsed = parseJSON(reply);
       if (parsed) { setPageData(parsed); setShareUrl(getShareUrl(parsed)); }
