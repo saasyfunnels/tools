@@ -547,14 +547,15 @@ export default function App() {
   };
 
   const callClaude = async history => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY || "";
+    const headers = {
+      "Content-Type": "application/json",
+      "anthropic-dangerous-direct-browser-access": "true",
+      "x-api-key": apiKey
+    };
     const r = await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "anthropic-dangerous-direct-browser-access":"true",
-        ...(apiKey ? {"x-api-key": apiKey} : {})
-      },
+      headers,
       body:JSON.stringify({
         model:"claude-sonnet-4-5-20251001",
         max_tokens:4000,

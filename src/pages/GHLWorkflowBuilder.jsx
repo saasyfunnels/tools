@@ -419,7 +419,7 @@ export default function App() {
   const fetchGHLUpdates = async () => {
     setLoadingUpdates(true);
     try {
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true",...(import.meta.env.VITE_ANTHROPIC_API_KEY?{"x-api-key":import.meta.env.VITE_ANTHROPIC_API_KEY}:{})},body:JSON.stringify({model:"claude-sonnet-4-5-20251001",max_tokens:400,tools:[{type:"web_search_20250305",name:"web_search"}],messages:[{role:"user",content:SEARCH_PROMPT}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true","x-api-key":import.meta.env.VITE_ANTHROPIC_API_KEY||""},body:JSON.stringify({model:"claude-sonnet-4-5-20251001",max_tokens:400,tools:[{type:"web_search_20250305",name:"web_search"}],messages:[{role:"user",content:SEARCH_PROMPT}]})});
       const data=await res.json();
       const text=data.content?.filter(b=>b.type==="text").map(b=>b.text).join(" ")||"";
       if(text&&!text.includes("No major updates")){setGhlUpdates(text.trim());setSystemPrompt(BASE_SYSTEM_PROMPT+`\n\nRECENT GHL UPDATES:\n${text.trim()}`);}
@@ -430,7 +430,7 @@ export default function App() {
   const parseJSON=text=>{try{const m=text.match(/```json\s*([\s\S]*?)```/);if(m)return JSON.parse(m[1]);}catch(e){}return null;};
 
   const callClaude=async history=>{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true",...(import.meta.env.VITE_ANTHROPIC_API_KEY?{"x-api-key":import.meta.env.VITE_ANTHROPIC_API_KEY}:{})},body:JSON.stringify({model:"claude-sonnet-4-5-20251001",max_tokens:3000,system:systemPrompt,messages:history.map(m=>({role:m.role,content:m.content}))})});
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true","x-api-key":import.meta.env.VITE_ANTHROPIC_API_KEY||""},body:JSON.stringify({model:"claude-sonnet-4-5-20251001",max_tokens:3000,system:systemPrompt,messages:history.map(m=>({role:m.role,content:m.content}))})});
     const d=await r.json();
     return d.content?.[0]?.text||"Something went wrong — please try again.";
   };
