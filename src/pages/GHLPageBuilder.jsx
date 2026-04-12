@@ -551,6 +551,7 @@ export default function App() {
     const headers = {
       "Content-Type": "application/json",
       "anthropic-dangerous-direct-browser-access": "true",
+      "anthropic-version": "2023-06-01",
       "x-api-key": apiKey
     };
     const r = await fetch("https://api.anthropic.com/v1/messages",{
