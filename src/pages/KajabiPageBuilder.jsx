@@ -78,7 +78,7 @@ If the client wants a funnel, plan ALL pages upfront before designing:
 When you have all information needed, say exactly:
 "Perfect — I have everything I need to design your page! Let me put this together now."
 
-Then output ONLY the JSON below — wrapped in ```json and ``` markers exactly as shown. No other text after the closing ```.
+Then output ONLY the JSON below — wrapped in triple-backtick json and triple-backtick markers exactly as shown. No other text after the closing triple-backtick.
 
 OUTPUT FORMAT:
 \`\`\`json
