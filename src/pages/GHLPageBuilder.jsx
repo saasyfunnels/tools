@@ -627,8 +627,23 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
         }
       }
       const reply = await callClaude(newHist);
-      const aMsg = { role:"assistant", content:reply };
-      historyRef.current = [...newHist, aMsg];
+      // Strip JSON from the displayed message
+      let displayReply = reply;
+      // Remove ```json ... ``` blocks
+      displayReply = displayReply.replace(/```json[\s\S]*?```/g, "").trim();
+      // Remove bare { ... } JSON blocks that contain projectName
+      if (displayReply.includes('"projectName"')) {
+        const start = displayReply.indexOf("{");
+        const end = displayReply.lastIndexOf("}");
+        if (start > -1 && end > start) {
+          displayReply = (displayReply.slice(0, start) + displayReply.slice(end + 1)).trim();
+        }
+      }
+      // Remove "json" label that sometimes appears before the block
+      displayReply = displayReply.replace(/^json\s*/i, "").trim();
+      if (!displayReply) displayReply = "✦ Your page design is ready — see below!";
+      const aMsg = { role:"assistant", content:displayReply };
+      historyRef.current = [...newHist, {role:"assistant", content:reply}];
       setMessages(prev=>[...prev,aMsg]);
       const parsed = parseJSON(reply);
       if (parsed) { setPageData(parsed); setShareUrl(getShareUrl(parsed)); }
@@ -646,10 +661,22 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
   const copyShareLink = () => { navigator.clipboard.writeText(shareUrl).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),3000);}); };
 
   const displayMsgs = messages.map(m => {
-    if (m.role==="assistant" && m.content.includes("```json")) {
-      const before = m.content.split("```json")[0].trim();
-      const after = m.content.split("```").slice(-1)[0].trim();
-      return {...m, content:[before,after].filter(Boolean).join("\n\n")};
+    if (m.role==="assistant") {
+      let content = m.content;
+      // Strip ```json ... ``` blocks
+      content = content.replace(/```json[\s\S]*?```/g, "").trim();
+      // Strip bare JSON blocks
+      if (content.includes('"projectName"')) {
+        const start = content.indexOf("{");
+        const end = content.lastIndexOf("}");
+        if (start > -1 && end > start) {
+          content = (content.slice(0, start) + content.slice(end + 1)).trim();
+        }
+      }
+      // Strip leading "json" label
+      content = content.replace(/^json\s*/i, "").trim();
+      if (!content) content = "✦ Your page design is ready — see below!";
+      return {...m, content};
     }
     return m;
   });
