@@ -121,23 +121,23 @@ export default function Dashboard() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0D0D0D',
+      background: '#FAFAFA',
       fontFamily: "'DM Sans', sans-serif",
-      color: '#F0EAF8',
+      color: '#0A0A0A',
     }}>
 
       {/* Ambient background */}
       <div style={{
         position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
-        background: 'radial-gradient(ellipse 80% 50% at 20% -10%, rgba(244,84,122,0.07) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 110%, rgba(107,53,200,0.08) 0%, transparent 60%)',
+        background: 'radial-gradient(ellipse 80% 50% at 20% -10%, rgba(244,84,122,0.05) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 110%, rgba(107,53,200,0.05) 0%, transparent 60%)',
       }} />
 
       {/* Nav */}
       <nav style={{
         position: 'sticky', top: 0, zIndex: 100,
-        background: 'rgba(13,13,13,0.92)',
+        background: 'rgba(250,250,250,0.95)',
         backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(0,0,0,0.08)',
         padding: '0 32px',
         height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -150,15 +150,16 @@ export default function Dashboard() {
             fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0,
           }}>SF</div>
           <div>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 700, color: '#F0EAF8', lineHeight: 1.1 }}>SaaSy Funnels</div>
-            <div style={{ fontSize: 10, color: 'rgba(240,234,248,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Design & Construct</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 700, color: '#0A0A0A', lineHeight: 1.1 }}>SaaSy Funnels</div>
+            <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Design & Construct</div>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(240,234,248,0.35)', fontStyle: 'italic' }}>
+        <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.35)', fontStyle: 'italic' }}>
           Powered by Claude
         </div>
       </nav>
 
+      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <main style={{ position: 'relative', zIndex: 1, maxWidth: 1100, margin: '0 auto', padding: '64px 24px 100px' }}>
 
         {/* Header */}
@@ -176,16 +177,17 @@ export default function Dashboard() {
             fontFamily: "'Playfair Display', serif",
             fontSize: 'clamp(32px, 5vw, 54px)',
             fontWeight: 900, lineHeight: 1.05,
-            color: '#F0EAF8',
+            color: '#0A0A0A',
             marginBottom: 16,
             letterSpacing: '-0.02em',
           }}>
+            Think it.<br />
             Brief it.<br />
             <span style={{ background: 'linear-gradient(135deg, #F4547A, #6B35C8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Build it faster.
+              Build it.
             </span>
           </h1>
-          <p style={{ fontSize: 16, color: 'rgba(240,234,248,0.5)', lineHeight: 1.7, maxWidth: 480 }}>
+          <p style={{ fontSize: 16, color: 'rgba(0,0,0,0.5)', lineHeight: 1.7, maxWidth: 480 }}>
             AI-powered planning tools for GHL and Kajabi. Have a conversation, get a buildable brief — ready to hand off to your team.
           </p>
         </div>
@@ -195,9 +197,9 @@ export default function Dashboard() {
           {['All', 'GHL', 'Kajabi'].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: '8px 20px', borderRadius: 100,
-              border: filter === f ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              background: filter === f ? 'linear-gradient(135deg, #F4547A, #6B35C8)' : 'rgba(255,255,255,0.04)',
-              color: filter === f ? '#fff' : 'rgba(240,234,248,0.5)',
+              border: filter === f ? 'none' : '1px solid rgba(0,0,0,0.12)',
+              background: filter === f ? 'linear-gradient(135deg, #F4547A, #6B35C8)' : 'rgba(0,0,0,0.04)',
+              color: filter === f ? '#fff' : 'rgba(0,0,0,0.5)',
               fontSize: 13, fontWeight: 600, cursor: 'pointer',
               transition: 'all 0.2s',
             }}>
@@ -222,12 +224,12 @@ export default function Dashboard() {
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 16,
             padding: '14px 28px',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: 'rgba(0,0,0,0.03)',
+            border: '1px solid rgba(0,0,0,0.08)',
             borderRadius: 100,
           }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00C8A0', boxShadow: '0 0 8px #00C8A0' }} />
-            <span style={{ fontSize: 13, color: 'rgba(240,234,248,0.35)' }}>
+            <span style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)' }}>
               6 tools live · 2 coming soon
             </span>
           </div>
@@ -248,14 +250,14 @@ function ToolCard({ tool, index, onClick }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered && !isComingSoon ? '#1A1A1A' : '#111111',
+        background: hovered && !isComingSoon ? '#FFFFFF' : '#F5F5F5',
         border: `1px solid ${hovered && !isComingSoon ? tool.accentBorder : 'rgba(255,255,255,0.07)'}`,
         borderRadius: 18,
         padding: '28px 24px 24px',
         cursor: isComingSoon ? 'default' : 'pointer',
         transition: 'all 0.25s ease',
         transform: hovered && !isComingSoon ? 'translateY(-3px)' : 'translateY(0)',
-        boxShadow: hovered && !isComingSoon ? `0 12px 40px ${tool.accentSoft}` : '0 2px 12px rgba(0,0,0,0.3)',
+        boxShadow: hovered && !isComingSoon ? `0 12px 40px ${tool.accentSoft}` : '0 2px 8px rgba(0,0,0,0.08)',
         opacity: isComingSoon ? 0.55 : 1,
         animation: `fadeUp 0.5s ${index * 0.07}s ease both`,
         display: 'flex', flexDirection: 'column', gap: 0,
@@ -276,8 +278,8 @@ function ToolCard({ tool, index, onClick }) {
           </div>
           {isComingSoon && (
             <div style={{
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-              color: 'rgba(240,234,248,0.4)', borderRadius: 6, padding: '3px 10px',
+              background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.1)',
+              color: 'rgba(0,0,0,0.35)', borderRadius: 6, padding: '3px 10px',
               fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
             }}>
               Coming soon
@@ -301,7 +303,7 @@ function ToolCard({ tool, index, onClick }) {
       {/* Name */}
       <div style={{
         fontFamily: "'Playfair Display', serif",
-        fontSize: 22, fontWeight: 700, color: '#F0EAF8',
+        fontSize: 22, fontWeight: 700, color: '#0A0A0A',
         marginBottom: 8, lineHeight: 1.1,
       }}>
         {tool.name}
@@ -309,7 +311,7 @@ function ToolCard({ tool, index, onClick }) {
 
       {/* Tagline */}
       <div style={{
-        fontSize: 13.5, color: 'rgba(240,234,248,0.5)',
+        fontSize: 13.5, color: 'rgba(0,0,0,0.5)',
         lineHeight: 1.65, marginBottom: 20, flex: 1,
       }}>
         {tool.tagline}
@@ -319,10 +321,10 @@ function ToolCard({ tool, index, onClick }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 22 }}>
         {tool.chips.map(chip => (
           <div key={chip} style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: 'rgba(0,0,0,0.04)',
+            border: '1px solid rgba(0,0,0,0.08)',
             borderRadius: 20, padding: '4px 12px',
-            fontSize: 11, color: 'rgba(240,234,248,0.45)', fontWeight: 500,
+            fontSize: 11, color: 'rgba(0,0,0,0.45)', fontWeight: 500,
           }}>
             {chip}
           </div>
@@ -337,17 +339,17 @@ function ToolCard({ tool, index, onClick }) {
         }}>
           <div style={{
             fontSize: 13, fontWeight: 600,
-            color: hovered ? tool.accent : 'rgba(240,234,248,0.45)',
+            color: hovered ? tool.accent : 'rgba(0,0,0,0.35)',
             transition: 'color 0.2s',
           }}>
             Open tool
           </div>
           <div style={{
             width: 32, height: 32, borderRadius: 8,
-            background: hovered ? tool.accentSoft : 'rgba(255,255,255,0.04)',
-            border: `1px solid ${hovered ? tool.accentBorder : 'rgba(255,255,255,0.07)'}`,
+            background: hovered ? tool.accentSoft : 'rgba(0,0,0,0.04)',
+            border: `1px solid ${hovered ? tool.accentBorder : 'rgba(0,0,0,0.08)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 14, color: hovered ? tool.accent : 'rgba(240,234,248,0.35)',
+            fontSize: 14, color: hovered ? tool.accent : 'rgba(0,0,0,0.3)',
             transition: 'all 0.2s',
             transform: hovered ? 'translateX(2px)' : 'translateX(0)',
           }}>

@@ -34,33 +34,42 @@ FUNNEL FLOW KNOWLEDGE:
 - Discovery call funnel: Application → Thank you (what to expect next) → Booking confirmation
 - Challenge funnel: Registration → Confirmation → Daily challenge pages → Sales page at end
 
-INTAKE PROCESS — ask ONE question at a time, in this order:
-1. Ask what the page is for — give them examples (opt-in, sales, webinar reg, thank you, VSL, etc.)
-2. Ask if this is a single page or part of a multi-page funnel — if multi-page, plan all pages upfront
-3. Ask about their niche and who the page is for (be specific: who is the ideal person landing on this page, what are they struggling with, what outcome do they want?)
-4. Ask about the ONE goal of this page — what do you want the visitor to do? (one CTA only)
-5. Ask about their brand voice — bold and direct? Warm and nurturing? Fun and irreverent? Professional and polished?
+CONVERSATION RULES — these are non-negotiable:
+- Ask ONE question at a time. Never combine two questions in one message.
+- Keep acknowledgements to ONE sentence maximum before asking the next question. No extended validation or commentary.
+- Where questions have clear options, list them as labelled choices (a, b, c) so the client can pick quickly.
+- COPY and IMAGES are always asked as SEPARATE questions — never combined.
 
-BRANDING INTAKE — offer all options, ask which they prefer:
-a) Upload a screenshot of their existing site — you'll extract the aesthetic
+INTAKE PROCESS — ask in this order, one at a time:
+1. What is the page for? Give examples: opt-in page, sales page, webinar registration, thank you page, VSL, discovery call, waitlist.
+2. Single page or multi-page funnel? If multi-page, plan all pages upfront before designing.
+3. Who is this page for — niche, who lands on it, what they struggle with, what outcome they want.
+4. What is the ONE goal — what should the visitor do? One CTA only.
+5. Brand voice — pick one: a) Warm and nurturing, b) Bold and direct, c) Fun and irreverent, d) Professional and polished, e) Empowering and confident.
+
+BRANDING INTAKE — one question, let them pick:
+a) Upload a screenshot of their existing site
 b) Upload a style guide PDF or doc
-c) Manually enter hex colours and font preferences
-d) Link to an inspiration site they love (accept a URL and say you'll pull from it)
-e) No existing branding — ask 3-4 quick vibe questions and recommend a palette + fonts before designing
+c) Paste their hex colours and font names
+d) Share a URL — you'll pull colours and fonts from it
+e) No branding yet — ask vibe questions and recommend a palette
 
-VIBE QUESTIONS (if no branding):
-- Adjectives: Pick 3 words that describe your brand vibe (e.g. bold, warm, playful, luxe, minimal, earthy, clinical, feminine, edgy)
-- Colour instinct: Any colours you love or hate?
-- Inspiration brands (not in your niche): Any brands whose look you love — even outside your industry?
-- Light or dark: Do you lean toward light/airy or dark/moody?
+VIBE QUESTIONS (only if option e):
+Ask these one at a time:
+- Pick 3 words that describe your brand vibe (bold, warm, playful, luxe, minimal, earthy, clinical, feminine, edgy, etc.)
+- Any colours you love or hate?
+- Any brands whose look you love — even outside your industry?
+- Light and airy or dark and moody?
 
-CONTENT INTAKE — offer both options:
-a) Upload a doc or paste their own copy — use their exact copy in the design
-b) Request placeholder copy — generate relevant, niche-specific placeholder copy (NOT generic Lorem Ipsum). Use their niche, offer, and brand voice to write real-feeling headlines, subheads, and body copy. Label clearly as [PLACEHOLDER — TO BE REPLACED].
+COPY INTAKE — ask this as a standalone question:
+Do you have copy ready, or should I write placeholder copy?
+a) I have copy — paste it or upload a doc and I'll use your exact words
+b) Write me placeholder copy — niche-specific, clearly marked [PLACEHOLDER — TO BE REPLACED]
 
-IMAGE INTAKE — offer both options:
-a) Upload their own images (photos, headshots, product shots, mockups)
-b) Request image suggestions — describe what images would work in each section and what to source/create
+IMAGE INTAKE — ask this as a separate standalone question AFTER copy:
+What about images?
+a) I have images ready — upload them or describe what you have
+b) Note what type of image would work in each section — I'll source or create them later
 
 CONVERSION FLAGS — flag these issues warmly and offer to proceed anyway:
 - Two CTAs on one page: "Heads up — having two different calls to action on one page usually splits attention and hurts conversions. What's the ONE thing you want them to do?"
@@ -224,11 +233,50 @@ function TopNav({ onBack }) {
   );
 }
 
-function Dots() {
+function Dots({ msg }) {
   return (
-    <div style={{display:"flex",alignItems:"center",gap:5,padding:"14px 18px",background:"rgba(255,255,255,0.04)",border:"1px solid "+ghlBorder,borderRadius:"0 18px 18px 18px"}}>
-      {[0,1,2].map(i=>(
-        <div key={i} style={{width:7,height:7,borderRadius:"50%",background:ghlPink,animation:"ghlBounce 1.2s ease-in-out infinite",animationDelay:`${i*0.2}s`}}/>
+    <div style={{display:"flex",flexDirection:"column",gap:6,padding:"14px 18px",background:"rgba(255,255,255,0.04)",border:"1px solid "+ghlBorder,borderRadius:"0 18px 18px 18px",maxWidth:"72%"}}>
+      <div style={{display:"flex",alignItems:"center",gap:5}}>
+        {[0,1,2].map(i=>(
+          <div key={i} style={{width:7,height:7,borderRadius:"50%",background:ghlPink,animation:"ghlBounce 1.2s ease-in-out infinite",animationDelay:`${i*0.2}s`}}/>
+        ))}
+      </div>
+      {msg && <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:ghlMuted,fontStyle:"italic",animation:"ghlFadeIn 0.4s ease"}}>{msg}</div>}
+    </div>
+  );
+}
+
+function extractChips(text) {
+  // Match lines like "a) option", "b) option", "- option", or "1. option"
+  const lines = text.split("\n");
+  const chips = [];
+  for (const line of lines) {
+    const m = line.match(/^\s*(?:[a-e]\)|[-•*]|\d+\.)\s+(.{3,60})$/);
+    if (m) chips.push(m[1].trim());
+  }
+  // Only return chips if there are 2-6 options
+  return chips.length >= 2 && chips.length <= 6 ? chips : [];
+}
+
+function QuickChips({ text, onSelect, accent }) {
+  const chips = extractChips(text);
+  if (!chips.length) return null;
+  return (
+    <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10,marginLeft:44}}>
+      {chips.map((chip, i) => (
+        <button key={i} onClick={() => onSelect(chip)}
+          style={{
+            background:"rgba(255,255,255,0.04)", border:`1px solid ${accent||ghlPurple}55`,
+            borderRadius:20, padding:"7px 14px", cursor:"pointer",
+            fontSize:13, color:ghlText, fontFamily:"'DM Sans',sans-serif",
+            fontWeight:500, transition:"all 0.15s",
+            display:"flex", alignItems:"center", gap:6,
+          }}
+          onMouseEnter={e=>{e.currentTarget.style.background=`rgba(107,53,200,0.12)`;e.currentTarget.style.borderColor=accent||ghlPurple;}}
+          onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.borderColor=`${accent||ghlPurple}55`;}}
+        >
+          {chip}
+        </button>
       ))}
     </div>
   );
@@ -514,6 +562,34 @@ export default function App() {
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const historyRef = useRef([]);
+  const [loadingMsg, setLoadingMsg] = useState("");
+  const loadingTimerRef = useRef(null);
+
+  const LOADING_MSGS = [
+    "Reviewing what you told me...",
+    "Thinking about your audience...",
+    "Mapping out your page structure...",
+    "Writing your sections...",
+    "Crafting the copy...",
+    "Checking conversion principles...",
+    "Adding design notes...",
+    "Putting it all together...",
+    "Almost there...",
+  ];
+
+  const startLoadingMsgs = () => {
+    let i = 0;
+    setLoadingMsg(LOADING_MSGS[0]);
+    loadingTimerRef.current = setInterval(() => {
+      i = Math.min(i + 1, LOADING_MSGS.length - 1);
+      setLoadingMsg(LOADING_MSGS[i]);
+    }, 3500);
+  };
+
+  const stopLoadingMsgs = () => {
+    clearInterval(loadingTimerRef.current);
+    setLoadingMsg("");
+  };
 
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
@@ -606,6 +682,7 @@ export default function App() {
     setMessages(prev=>[...prev,userMsg]);
     setLoading(true);
     setPendingFiles([]);
+    startLoadingMsgs();
     try {
       // If message contains a URL, fetch the page branding first and inject as context
       const url = extractUrl(text);
@@ -619,7 +696,8 @@ H1: ${branding.h1 || "none"}
 Google Fonts detected: ${branding.googleFonts?.join(", ") || "none detected"}
 Font families in CSS: ${branding.fonts?.slice(0,5).join(", ") || "none detected"}
 Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
-[Use this data to describe the site's visual aesthetic, colour palette, and typography to the user. Identify the dominant colours and fonts. If colours or fonts are sparse, acknowledge that and ask the user to confirm or provide their brand details manually.]`;
+Images found on page: ${branding.images?.slice(0,8).join(", ") || "none detected"}
+[Use this data to describe the site's visual aesthetic, colour palette, typography, and image style to the user. Identify dominant colours, fonts, and what types of images they use. If the user wants to reuse images from this page, reference the image URLs above. If colours or fonts are sparse, acknowledge that and ask the user to confirm or provide details manually.]`;
           const contextMsg = { role:"user", content:brandingContext };
           const ackMsg = { role:"assistant", content:`Got it — I've pulled the page data for ${url}. Let me analyse the branding now.` };
           newHist = [...newHist, contextMsg, ackMsg];
@@ -629,19 +707,19 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
       const reply = await callClaude(newHist);
       // Strip JSON from the displayed message
       let displayReply = reply;
-      // Remove ```json ... ``` blocks
-      displayReply = displayReply.replace(/```json[\s\S]*?```/g, "").trim();
-      // Remove bare { ... } JSON blocks that contain projectName
-      if (displayReply.includes('"projectName"')) {
-        const start = displayReply.indexOf("{");
-        const end = displayReply.lastIndexOf("}");
-        if (start > -1 && end > start) {
-          displayReply = (displayReply.slice(0, start) + displayReply.slice(end + 1)).trim();
+      // Strip all code fences
+      displayReply = displayReply.replace(/```[\s\S]*?```/g, "").trim();
+      // Strip bare JSON blocks by detecting key JSON fields
+      const JSON_KEYS = ["projectName", "pageType", "isMultiPage", "sections", "palette"];
+      if (JSON_KEYS.some(k => displayReply.includes('"' + k + '"'))) {
+        const jStart = displayReply.indexOf("{");
+        const jEnd = displayReply.lastIndexOf("}");
+        if (jStart > -1 && jEnd > jStart) {
+          displayReply = (displayReply.slice(0, jStart) + displayReply.slice(jEnd + 1)).trim();
         }
       }
-      // Remove "json" label that sometimes appears before the block
       displayReply = displayReply.replace(/^json\s*/i, "").trim();
-      if (!displayReply) displayReply = "✦ Your page design is ready — see below!";
+      if (!displayReply || displayReply.length < 3) displayReply = "✦ Your page design is ready — see below!";
       const aMsg = { role:"assistant", content:displayReply };
       historyRef.current = [...newHist, {role:"assistant", content:reply}];
       setMessages(prev=>[...prev,aMsg]);
@@ -650,6 +728,7 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
     } catch(e) {
       setMessages(prev=>[...prev,{role:"assistant",content:"Something went wrong — please try again."}]);
     }
+    stopLoadingMsgs();
     setLoading(false);
     inputRef.current?.focus();
   };
@@ -660,25 +739,18 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
   const downloadPDF = () => { if(!pageData)return; const w=window.open("","_blank"); w.document.write(buildHTML(pageData)); w.document.close(); w.onload=()=>w.print(); };
   const copyShareLink = () => { navigator.clipboard.writeText(shareUrl).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),3000);}); };
 
+  const JSON_DETECT = ["projectName", "pageType", "isMultiPage", "sections", "palette"];
   const displayMsgs = messages.map(m => {
-    if (m.role==="assistant") {
-      let content = m.content;
-      content = content.replace(/```json[\s\S]*?```/g, "").trim();
-      content = content.replace(/```[\s\S]*?```/g, "").trim();
-      const jsonKeys = ['"projectName"', '"pageType"', '"isMultiPage"', '"sections"'];
-      const hasJSON = jsonKeys.some(k => content.includes(k));
-      if (hasJSON) {
-        const start = content.indexOf("{");
-        const end = content.lastIndexOf("}");
-        if (start > -1 && end > start) {
-          content = (content.slice(0, start) + content.slice(end + 1)).trim();
-        }
-      }
-      content = content.replace(/^json\s*/i, "").trim();
-      if (!content || content.length < 3) content = "✦ Your page design is ready — see below!";
-      return {...m, content};
+    if (m.role !== "assistant") return m;
+    let content = m.content;
+    content = content.replace(/```[\s\S]*?```/g, "").trim();
+    if (JSON_DETECT.some(k => content.includes('"' + k + '"'))) {
+      const s = content.indexOf("{"); const e = content.lastIndexOf("}");
+      if (s > -1 && e > s) content = (content.slice(0, s) + content.slice(e + 1)).trim();
     }
-    return m;
+    content = content.replace(/^json\s*/i, "").trim();
+    if (!content || content.length < 3) content = "✦ Your page design is ready — see below!";
+    return {...m, content};
   });
 
   const pageCount = pageData?.pages?.length || 1;
@@ -763,6 +835,9 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
                 {displayMsgs.map((m,i)=>(
                   <div key={i}>
                     <Bubble msg={m}/>
+                    {m.role==="assistant" && i===displayMsgs.length-1 && !loading && !pageData && (
+                      <QuickChips text={m.content} onSelect={t=>{setInput("");send(t,[]);}} accent={ghlPurple}/>
+                    )}
                     {m.files?.length>0&&(
                       <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10,justifyContent:"flex-end"}}>
                         {m.files.map((f,fi)=>(
@@ -777,7 +852,7 @@ Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
                 {loading&&(
                   <div style={{display:"flex",marginBottom:12}}>
                     <div style={{width:34,height:34,borderRadius:"50%",background:sfGradient,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,marginRight:10,flexShrink:0,color:"#fff",fontWeight:700}}>✦</div>
-                    <Dots/>
+                    <Dots msg={loadingMsg}/>
                   </div>
                 )}
                 {pageData&&(

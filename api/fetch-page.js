@@ -86,6 +86,9 @@ export default async function handler(req) {
     const h1Match = html.match(/<h1[^>]*>([^<]{5,200})<\/h1>/i);
     const h1 = h1Match ? h1Match[1].replace(/<[^>]+>/g, '').trim() : '';
 
+    // Extract image URLs
+    const images = extractImages(html, targetUrl);
+
     return new Response(JSON.stringify({
       success: true,
       url: targetUrl,
@@ -96,6 +99,7 @@ export default async function handler(req) {
       colours: colours.slice(0, 20),
       fonts: fonts.slice(0, 10),
       googleFonts,
+      images: images.slice(0, 12),
     }), {
       status: 200,
       headers: {
@@ -172,6 +176,41 @@ function extractFonts(html) {
   }
 
   return [...fonts];
+}
+
+function extractImages(html, baseUrl) {
+  const images = [];
+  const seen = new Set();
+
+  // Match <img src="..."> tags
+  const imgMatches = html.matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi);
+  for (const m of imgMatches) {
+    let src = m[1].trim();
+    if (src.startsWith('data:')) continue;
+    if (src.startsWith('//')) src = 'https:' + src;
+    if (src.startsWith('/')) {
+      try { src = new URL(src, baseUrl).href; } catch { continue; }
+    }
+    if (!src.startsWith('http')) continue;
+    // Skip tiny images, icons, and tracking pixels by filtering common patterns
+    if (src.includes('pixel') || src.includes('beacon') || src.includes('track')) continue;
+    if (!seen.has(src)) { seen.add(src); images.push(src); }
+  }
+
+  // Also match background-image: url(...) in style attributes
+  const bgMatches = html.matchAll(/background-image\s*:\s*url\(["']?([^"')]+)["']?\)/gi);
+  for (const m of bgMatches) {
+    let src = m[1].trim();
+    if (src.startsWith('data:')) continue;
+    if (src.startsWith('//')) src = 'https:' + src;
+    if (src.startsWith('/')) {
+      try { src = new URL(src, baseUrl).href; } catch { continue; }
+    }
+    if (!src.startsWith('http')) continue;
+    if (!seen.has(src)) { seen.add(src); images.push(src); }
+  }
+
+  return images;
 }
 
 function extractGoogleFonts(html) {
