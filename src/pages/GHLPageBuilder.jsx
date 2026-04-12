@@ -546,6 +546,28 @@ export default function App() {
     });
   };
 
+  const fetchPageBranding = async (url) => {
+    try {
+      const res = await fetch("/api/fetch-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+      if (!data.success) return null;
+      return data;
+    } catch {
+      return null;
+    }
+  };
+
+  const extractUrl = (text) => {
+    const match = text.match(/https?:\/\/[^\s]+|(?:www\.)[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/);
+    if (!match) return null;
+    const url = match[0];
+    return url.startsWith("http") ? url : "https://" + url;
+  };
+
   const callClaude = async history => {
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY || "";
     const headers = {
@@ -561,7 +583,6 @@ export default function App() {
         model:"claude-sonnet-4-5-20250929",
         max_tokens:4000,
         system:BASE_SYSTEM_PROMPT,
-        tools:[{type:"web_search_20250305",name:"web_search"}],
         messages:buildMessages(history)
       })
     });
@@ -573,12 +594,31 @@ export default function App() {
 
   const send = async (text, files=[]) => {
     const userMsg = { role:"user", content:text, files };
-    const newHist = [...historyRef.current, userMsg];
+    let newHist = [...historyRef.current, userMsg];
     historyRef.current = newHist;
     setMessages(prev=>[...prev,userMsg]);
     setLoading(true);
     setPendingFiles([]);
     try {
+      // If message contains a URL, fetch the page branding first and inject as context
+      const url = extractUrl(text);
+      if (url && (text.toLowerCase().includes("http") || text.toLowerCase().includes("www") || text.match(/\.[a-z]{2,}\//))) {
+        const branding = await fetchPageBranding(url);
+        if (branding && branding.success) {
+          const brandingContext = `[PAGE FETCH RESULT for ${url}]
+Title: ${branding.title || "unknown"}
+Description: ${branding.description || "none"}
+H1: ${branding.h1 || "none"}
+Google Fonts detected: ${branding.googleFonts?.join(", ") || "none detected"}
+Font families in CSS: ${branding.fonts?.slice(0,5).join(", ") || "none detected"}
+Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
+[Use this data to describe the site's visual aesthetic, colour palette, and typography to the user. Identify the dominant colours and fonts. If colours or fonts are sparse, acknowledge that and ask the user to confirm or provide their brand details manually.]`;
+          const contextMsg = { role:"user", content:brandingContext };
+          const ackMsg = { role:"assistant", content:`Got it — I've pulled the page data for ${url}. Let me analyse the branding now.` };
+          newHist = [...newHist, contextMsg, ackMsg];
+          historyRef.current = newHist;
+        }
+      }
       const reply = await callClaude(newHist);
       const aMsg = { role:"assistant", content:reply };
       historyRef.current = [...newHist, aMsg];
