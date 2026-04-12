@@ -558,7 +558,7 @@ export default function App() {
       method:"POST",
       headers,
       body:JSON.stringify({
-        model:"claude-sonnet-4-5-20251001",
+        model:"claude-sonnet-4-5-20250929",
         max_tokens:4000,
         system:BASE_SYSTEM_PROMPT,
         tools:[{type:"web_search_20250305",name:"web_search"}],
