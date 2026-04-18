@@ -62,16 +62,20 @@ CONVERSATION RULES — non-negotiable:
 - COPY and IMAGES are always asked as SEPARATE questions — never combined.
 - Never say things like "I love working with this audience" or "Perfect choice!" — be warm but extremely brief.
 
-INTAKE PROCESS — one at a time, in order:
-1. What is the page for? Give examples: opt-in page, sales page, webinar registration, thank you page, VSL, discovery call, waitlist.
+INTAKE PROCESS — one at a time, strictly in order:
+1. What is the page for? Give examples: opt-in page, sales page, webinar registration, VSL, discovery call, waitlist.
 2. Single page or multi-page funnel? If multi-page, plan all pages upfront before designing.
-3. Who is this page for — niche, who lands on it, what they struggle with, what outcome they want.
-4. What is the ONE goal of this page — what should the visitor do?
-5. For opt-in/registration pages only: What information do you want to collect from registrants?
+3. Who is this page for — niche, who they are, what they struggle with, what outcome they want.
+4. PAGE-TYPE SPECIFIC QUESTIONS — ask ALL that apply for the page type, one at a time:
+   - For WEBINAR pages: What is the webinar title or topic? When is it (date + time + timezone)? How long? Live or pre-recorded?
+   - For SALES pages: What is the offer name and price? What are the main benefits or modules?
+   - For OPT-IN pages: What is the lead magnet name? What do they get?
+   - For DISCOVERY CALL pages: What is the call about? Any qualifying questions you want to ask?
+   - For VSL pages: What is the main offer being pitched in the video?
+5. For opt-in/registration pages: What information to collect from registrants?
    a) Name + email only
    b) Name + email + phone
-   c) Something else — tell me what
-   Skip this question for sales pages, VSL pages, and thank you pages.
+   c) Something else — tell me
 6. Brand voice — pick one: a) Warm and nurturing, b) Bold and direct, c) Fun and irreverent, d) Professional and polished, e) Empowering and confident.
 
 BRANDING INTAKE — one question, let them pick:
@@ -166,19 +170,34 @@ HTML GENERATION RULES — follow these precisely:
 - Dark testimonial strips contrasting with light sections
 - Bold stat/number blocks
 - Card grids for benefits or features
-- Sticky or fixed navigation if appropriate
 - Countdown timer visual (static, styled)
-- Video embed placeholder (styled black box with play button)
+- Video embed placeholder (styled black box with play button overlay)
+- Speaker/host bio section with image placeholder
+- Social proof logos row
 
-6. MOBILE: Include a <style> block with @media (max-width: 768px) rules. Columns stack, font sizes reduce, padding tightens.
+6. IMAGES — MANDATORY: Every page MUST have at least 3-4 image placeholders spread throughout the page. Place them:
+- Hero section: full-width or split-layout hero image (lifestyle, product, or speaker photo)
+- About/host section: headshot or personal brand photo
+- Mid-page: supporting lifestyle or result image
+- Any testimonial or social proof section: include small avatar placeholders per testimonial
+Use the img-placeholder div format specified above for ALL of these. Label them descriptively.
 
-7. CTA BUTTONS: Style with brand colours, border-radius:40px, padding:16px 40px, font-weight:700. Include hover state via inline onmouseover/onmouseout.
+7. COLOURS — STRICT RULES:
+- ALL buttons on the page must use the palette primary colour as background — never use blue, green, or any colour not in the palette
+- ALL links and accents must use palette colours only
+- Section background alternation: use palette.background and palette.secondary only
+- Never invent colours not in the palette
+- No random white circles, grey boxes, or decorative shapes in unspecified colours
 
-8. COPY: If the user has copy, use it exactly. If placeholder, write specific niche-appropriate copy clearly marked with <!-- PLACEHOLDER --> HTML comments on either side. Never write generic "Lorem ipsum".
+8. MOBILE: Include a <style> block with @media (max-width: 768px) rules. Columns stack, font sizes reduce, padding tightens.
 
-9. FOOTER: Every page ends with a minimal footer: SaaSy Funnels watermark in small text, right-aligned, muted colour.
+9. CTA BUTTONS: Style with palette.primary as background, border-radius:40px, padding:16px 40px, font-weight:700, color:#fff.
 
-10. MULTI-PAGE: Each page in the pages array is a complete standalone HTML document. They share the same palette and fonts but are independent files. At the bottom of each page (except the last), include a note: <!-- Next: [next page name] --> as an HTML comment.`;
+10. COPY: If the user has copy, use it exactly. If placeholder, write specific niche-appropriate copy clearly marked with <!-- PLACEHOLDER --> HTML comments. Never write generic "Lorem ipsum".
+
+11. FOOTER: Every page ends with a minimal footer: SaaSy Funnels watermark in small text, muted colour, centered.
+
+12. MULTI-PAGE: Each page is a complete standalone HTML document. They share the same palette and fonts but are independent files.`;
 
 // ─── Prompts ──────────────────────────────────────────────────────────────────
 const PROMPTS = [
@@ -204,8 +223,14 @@ function extractChips(text) {
   const lines = text.split("\n");
   const chips = [];
   for (const line of lines) {
-    const m = line.match(/^\s*(?:[a-e]\)|[-•*]|\d+\.)\s+(.{3,60})$/);
-    if (m) chips.push(m[1].trim());
+    // Match: a) text, a. text, - text, • text, * text, 1. text
+    const m = line.match(/^\s*(?:[a-e][.):]|[-•*]|\d+[.)]|[A-E][.)]|\*\*)\s+(.{3,80}?)(?:\*\*)?$/);
+    if (m) {
+      // Clean up any trailing ** or punctuation
+      let chip = m[1].trim().replace(/\*\*$/,'').trim();
+      // Skip lines that are just instructions or too long
+      if (chip.length >= 3 && chip.length <= 75) chips.push(chip);
+    }
   }
   return chips.length >= 2 && chips.length <= 6 ? chips : [];
 }
@@ -497,20 +522,21 @@ function PageOutput({ projectData, onAddImages }) {
   }, []);
 
   const openPage = async (page) => {
-    // If we already have a blob URL, use it
+    // Open window immediately (synchronously) to avoid popup blocker
+    const win = window.open("about:blank", "_blank");
     if (pageUrls[page.id]) {
-      window.open(pageUrls[page.id], "_blank");
+      win.location.href = pageUrls[page.id];
       return;
     }
-    // Try to save and get blob URL
+    // Try blob save
     const url = await savePage(page);
     if (url) {
-      window.open(url, "_blank");
+      win.location.href = url;
       return;
     }
-    // Fallback: open via local object URL (won't be shareable but page will open)
-    const localUrl = getLocalUrl(page);
-    window.open(localUrl, "_blank");
+    // Fallback: write HTML directly into the new window
+    win.document.write(page.html);
+    win.document.close();
   };
 
   const copyLink = async (page, idx) => {
@@ -890,22 +916,26 @@ Use these exact hex values in the page design.`;
 
   // ── AI image generation ─────────────────────────────────────────────────────
   const addAIImages = async (setProgress, onComplete) => {
-    if (!projectData?.pages) return;
-    const updatedPages = [...projectData.pages];
+    if (!projectData?.pages) { console.error("No project data"); return; }
+    const updatedPages = projectData.pages.map(p => ({ ...p }));
 
     for (let pi = 0; pi < updatedPages.length; pi++) {
-      const page = updatedPages[pi];
-      // Extract placeholder labels from HTML
+      // Extract placeholder labels from current HTML
       const placeholderRegex = /data-label="([^"]+)"/g;
       let match;
       const placeholders = [];
-      while ((match = placeholderRegex.exec(page.html)) !== null) {
+      while ((match = placeholderRegex.exec(updatedPages[pi].html)) !== null) {
         placeholders.push(match[1]);
+      }
+
+      if (placeholders.length === 0) {
+        setProgress(`Page ${pi + 1}: no image placeholders found, skipping…`);
+        continue;
       }
 
       for (let ii = 0; ii < placeholders.length; ii++) {
         const label = placeholders[ii];
-        setProgress(`Page ${pi + 1} of ${updatedPages.length}: generating "${label}" (${ii + 1}/${placeholders.length})…`);
+        setProgress(`Page ${pi + 1} of ${updatedPages.length}: generating image ${ii + 1}/${placeholders.length}…`);
         try {
           const res = await fetch("/api/generate-image", {
             method: "POST",
@@ -914,14 +944,18 @@ Use these exact hex values in the page design.`;
           });
           const data = await res.json();
           if (data.success && data.url) {
-            // Replace the placeholder div with a real image
+            // Replace placeholder in the CURRENT html of this page (not stale closure)
             const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const placeholderDivRegex = new RegExp(
               `<div class="img-placeholder"[^>]*data-label="${escapedLabel}"[^>]*>[\\s\\S]*?<\\/div>`,
               'i'
             );
-            const imgTag = `<img src="${data.url}" alt="${label}" style="width:100%;border-radius:12px;display:block;" />`;
-            updatedPages[pi] = { ...page, html: page.html.replace(placeholderDivRegex, imgTag) };
+            updatedPages[pi].html = updatedPages[pi].html.replace(
+              placeholderDivRegex,
+              `<img src="${data.url}" alt="${label}" style="width:100%;border-radius:12px;display:block;" />`
+            );
+          } else {
+            console.error("Image gen returned no URL:", data);
           }
         } catch (e) {
           console.error("Image gen failed for:", label, e);
@@ -1017,10 +1051,30 @@ Use these exact hex values in the page design.`;
             </div>
 
           ) : projectData ? (
-            /* ── Output panel ── */
-            <div style={{ flex: 1, overflowY: "auto" }}>
-              <PageOutput projectData={projectData} onAddImages={addAIImages} />
-            </div>
+            /* ── Output panel + continue conversation ── */
+            <>
+              <div style={{ flex: 1, overflowY: "auto" }}>
+                <PageOutput projectData={projectData} onAddImages={addAIImages} />
+                {/* Continue conversation */}
+                <div style={{ padding: "0 16px 16px" }}>
+                  <div style={{ borderTop: "1px solid " + ghlBorder, paddingTop: 14, marginTop: 4 }}>
+                    <div style={{ fontSize: 12, color: ghlMuted, fontFamily: "'DM Sans',sans-serif", marginBottom: 10 }}>
+                      Want changes? Tell me what to adjust and I'll redesign.
+                    </div>
+                    {displayMsgs.slice(-3).map((m, i) => m.role === "assistant" ? null : null)}
+                    <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                      <textarea value={input} onChange={e => setInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (input.trim() && !loading) { const t = input.trim(); setInput(""); send(t, []); } } }}
+                        placeholder="e.g. Make the hero darker, add more testimonials, change the font…" rows={2}
+                        style={{ flex: 1, border: "1px solid " + ghlBorder, borderRadius: 10, padding: "11px 14px", fontSize: 13, fontFamily: "'DM Sans',sans-serif", background: "rgba(255,255,255,0.04)", color: ghlText, lineHeight: 1.5, opacity: loading ? 0.5 : 1 }} />
+                      <button onClick={() => { if (!input.trim() || loading) return; const t = input.trim(); setInput(""); setProjectData(null); send(t, []); }}
+                        disabled={loading || !input.trim()}
+                        style={{ ...btn(), background: loading || !input.trim() ? "rgba(107,53,200,0.3)" : sfGradient, padding: "12px 18px", fontSize: 18 }}>→</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
 
           ) : (
             /* ── Conversation ── */

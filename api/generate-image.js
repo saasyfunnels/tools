@@ -28,9 +28,9 @@ export default async function handler(req) {
     });
   }
 
-  const token = process.env.REPLICATE_API_TOKEN;
+  const token = process.env.REPLICATE_API_TOKEN || process.env.replicate;
   if (!token) {
-    return new Response(JSON.stringify({ error: 'REPLICATE_API_TOKEN not configured' }), {
+    return new Response(JSON.stringify({ error: 'Replicate API token not configured' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

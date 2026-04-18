@@ -65,16 +65,20 @@ CONVERSATION RULES — non-negotiable:
 - COPY and IMAGES are always asked as SEPARATE questions — never combined.
 - Never say things like "I love working with this audience" or "Perfect choice!" — be warm but extremely brief.
 
-INTAKE PROCESS — one at a time, in order:
-1. What is the page for? Give examples: opt-in page, sales page, webinar registration, thank you page, VSL, discovery call, waitlist.
+INTAKE PROCESS — one at a time, strictly in order:
+1. What is the page for? Give examples: opt-in page, sales page, webinar registration, VSL, discovery call, waitlist.
 2. Single page or multi-page pipeline? If multi-page, plan all pages upfront before designing.
-3. Who is this page for — niche, who lands on it, what they struggle with, what outcome they want.
-4. What is the ONE goal of this page — what should the visitor do?
-5. For opt-in/registration pages only: What information do you want to collect from registrants?
+3. Who is this page for — niche, who they are, what they struggle with, what outcome they want.
+4. PAGE-TYPE SPECIFIC QUESTIONS — ask ALL that apply, one at a time:
+   - For WEBINAR pages: What is the webinar title or topic? When is it (date + time + timezone)? How long? Live or pre-recorded?
+   - For SALES pages: What is the offer name and price? What are the main benefits or modules?
+   - For OPT-IN pages: What is the lead magnet name? What do they get?
+   - For DISCOVERY CALL pages: What is the call about? Any qualifying questions?
+   - For VSL pages: What is the main offer being pitched?
+5. For opt-in/registration pages: What information to collect from registrants?
    a) Name + email only
    b) Name + email + phone
-   c) Something else — tell me what
-   Skip this question for sales pages, VSL pages, and thank you pages.
+   c) Something else — tell me
 6. Brand voice — pick one: a) Warm and nurturing, b) Bold and direct, c) Fun and irreverent, d) Professional and polished, e) Empowering and confident.
 
 BRANDING INTAKE — one question, let them pick:
@@ -167,21 +171,34 @@ HTML GENERATION RULES — follow these precisely:
 - Clean hero sections with strong headline + subheadline + CTA
 - Benefit grids (2-3 columns on desktop, stacked on mobile)
 - Testimonial sections (card style or pull-quote style)
-- About/credibility section
+- About/credibility section with image placeholder
 - FAQ accordions (visual, not functional — show first item open)
 - Clear CTA sections with high contrast
-- Simple, clean footer with privacy/terms note
+- Simple, clean footer
 Kajabi pages tend to be cleaner and lighter than GHL pages — lean into this.
 
-6. MOBILE: Include a <style> block with @media (max-width: 768px) rules. Columns stack, font sizes reduce, padding tightens.
+6. IMAGES — MANDATORY: Every page MUST have at least 3-4 image placeholders spread throughout. Place them:
+- Hero section: full-width or split-layout hero image
+- About/host section: headshot or personal brand photo
+- Mid-page: supporting lifestyle or result image
+- Testimonials: small avatar placeholder per testimonial
+Use the img-placeholder div format for ALL of these. Label them descriptively.
 
-7. CTA BUTTONS: Style with brand colours, border-radius:40px, padding:16px 40px, font-weight:700.
+7. COLOURS — STRICT RULES:
+- ALL buttons must use palette primary colour as background — never blue, green, or any off-palette colour
+- ALL links and accents must use palette colours only
+- No random white circles, grey boxes, or decorative shapes in unspecified colours
+- Section backgrounds use palette.background and palette.secondary only
 
-8. COPY: If the user has copy, use it exactly. If placeholder, write specific niche-appropriate copy clearly marked with <!-- PLACEHOLDER --> HTML comments. Never write generic "Lorem ipsum".
+8. MOBILE: Include a <style> block with @media (max-width: 768px) rules. Columns stack, font sizes reduce, padding tightens.
 
-9. FOOTER: Every page ends with a minimal footer: SaaSy Funnels watermark in small text, muted colour, centered.
+9. CTA BUTTONS: palette.primary background, border-radius:40px, padding:16px 40px, font-weight:700, color:#fff.
 
-10. MULTI-PAGE: Each page is a complete standalone HTML document. They share the same palette and fonts but are independent files. Include a note at the bottom of each page about the next step in the pipeline.`;
+10. COPY: If the user has copy, use it exactly. If placeholder, write specific niche-appropriate copy with <!-- PLACEHOLDER --> comments. Never write generic "Lorem ipsum".
+
+11. FOOTER: Minimal footer: SaaSy Funnels watermark, muted colour, centered.
+
+12. MULTI-PAGE: Each page is a complete standalone HTML document with the same palette and fonts.`;
 
 const PROMPTS = [
   "Design a Kajabi opt-in page for my lead magnet",
@@ -206,8 +223,11 @@ function extractChips(text) {
   const lines = text.split("\n");
   const chips = [];
   for (const line of lines) {
-    const m = line.match(/^\s*(?:[a-e]\)|[-•*]|\d+\.)\s+(.{3,60})$/);
-    if (m) chips.push(m[1].trim());
+    const m = line.match(/^\s*(?:[a-e][.):]|[-•*]|\d+[.)]|[A-E][.)]|\*\*)\s+(.{3,80}?)(?:\*\*)?$/);
+    if (m) {
+      let chip = m[1].trim().replace(/\*\*$/,'').trim();
+      if (chip.length >= 3 && chip.length <= 75) chips.push(chip);
+    }
   }
   return chips.length >= 2 && chips.length <= 6 ? chips : [];
 }
@@ -470,10 +490,12 @@ function PageOutput({ projectData, onAddImages }) {
   useEffect(() => { pages.forEach(page => savePage(page)); }, []);
 
   const openPage = async (page) => {
-    if (pageUrls[page.id]) { window.open(pageUrls[page.id], "_blank"); return; }
+    const win = window.open("about:blank", "_blank");
+    if (pageUrls[page.id]) { win.location.href = pageUrls[page.id]; return; }
     const url = await savePage(page);
-    if (url) { window.open(url, "_blank"); return; }
-    window.open(getLocalUrl(page), "_blank");
+    if (url) { win.location.href = url; return; }
+    win.document.write(page.html);
+    win.document.close();
   };
 
   const copyLink = async (page, idx) => {
@@ -816,17 +838,17 @@ export default function KajabiPageBuilder() {
   };
 
   const addAIImages = async (setProgress, onComplete) => {
-    if (!projectData?.pages) return;
-    const updatedPages = [...projectData.pages];
+    if (!projectData?.pages) { console.error("No project data"); return; }
+    const updatedPages = projectData.pages.map(p => ({ ...p }));
     for (let pi = 0; pi < updatedPages.length; pi++) {
-      const page = updatedPages[pi];
       const placeholderRegex = /data-label="([^"]+)"/g;
       let match;
       const placeholders = [];
-      while ((match = placeholderRegex.exec(page.html)) !== null) placeholders.push(match[1]);
+      while ((match = placeholderRegex.exec(updatedPages[pi].html)) !== null) placeholders.push(match[1]);
+      if (placeholders.length === 0) { setProgress(`Page ${pi + 1}: no placeholders found, skipping…`); continue; }
       for (let ii = 0; ii < placeholders.length; ii++) {
         const label = placeholders[ii];
-        setProgress(`Page ${pi + 1} of ${updatedPages.length}: generating "${label}" (${ii + 1}/${placeholders.length})…`);
+        setProgress(`Page ${pi + 1} of ${updatedPages.length}: generating image ${ii + 1}/${placeholders.length}…`);
         try {
           const res = await fetch("/api/generate-image", {
             method: "POST",
@@ -837,8 +859,7 @@ export default function KajabiPageBuilder() {
           if (data.success && data.url) {
             const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const placeholderDivRegex = new RegExp(`<div class="img-placeholder"[^>]*data-label="${escapedLabel}"[^>]*>[\\s\\S]*?<\\/div>`, 'i');
-            const imgTag = `<img src="${data.url}" alt="${label}" style="width:100%;border-radius:12px;display:block;" />`;
-            updatedPages[pi] = { ...page, html: page.html.replace(placeholderDivRegex, imgTag) };
+            updatedPages[pi].html = updatedPages[pi].html.replace(placeholderDivRegex, `<img src="${data.url}" alt="${label}" style="width:100%;border-radius:12px;display:block;" />`);
           }
         } catch (e) { console.error("Image gen failed:", label, e); }
       }
@@ -923,9 +944,27 @@ export default function KajabiPageBuilder() {
             </div>
 
           ) : projectData ? (
-            <div style={{ flex: 1, overflowY: "auto" }}>
-              <PageOutput projectData={projectData} onAddImages={addAIImages} />
-            </div>
+            <>
+              <div style={{ flex: 1, overflowY: "auto" }}>
+                <PageOutput projectData={projectData} onAddImages={addAIImages} />
+                <div style={{ padding: "0 16px 16px" }}>
+                  <div style={{ borderTop: "1px solid " + kjBorder, paddingTop: 14, marginTop: 4 }}>
+                    <div style={{ fontSize: 12, color: kjMuted, fontFamily: "'DM Sans',sans-serif", marginBottom: 10 }}>
+                      Want changes? Tell me what to adjust and I'll redesign.
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                      <textarea value={input} onChange={e => setInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (input.trim() && !loading) { const t = input.trim(); setInput(""); send(t, []); } } }}
+                        placeholder="e.g. Make the hero darker, add more testimonials, change the font…" rows={2}
+                        style={{ flex: 1, border: "1px solid " + kjBorder, borderRadius: 10, padding: "11px 14px", fontSize: 13, fontFamily: "'DM Sans',sans-serif", background: "#F9F9F9", color: kjText, lineHeight: 1.5 }} />
+                      <button onClick={() => { if (!input.trim() || loading) return; const t = input.trim(); setInput(""); setProjectData(null); send(t, []); }}
+                        disabled={loading || !input.trim()}
+                        style={{ ...btn(), background: loading || !input.trim() ? `${kjPurple}44` : sfGradient, padding: "12px 18px", fontSize: 18 }}>→</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
 
           ) : (
             <>
