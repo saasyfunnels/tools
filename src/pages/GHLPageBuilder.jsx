@@ -849,6 +849,11 @@ export default function GHLPageBuilder() {
         }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        console.error("API error:", res.status, JSON.stringify(data));
+        setMessages(prev => [...prev, { role: "assistant", content: `API error ${res.status}: ${data?.error?.message || JSON.stringify(data)}` }]);
+        stopLoadingMsgs(); setLoading(false); return;
+      }
       const reply = data.content?.find(b => b.type === "text")?.text || "Something went wrong.";
 
       const parsed = parseJSON(reply);
