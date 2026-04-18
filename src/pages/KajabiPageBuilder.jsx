@@ -70,7 +70,7 @@ INTAKE PROCESS — one question at a time, strictly in order. Ask each, wait for
 2. Single page or multi-page pipeline? If multi-page, plan all pages upfront before designing.
 3. Who is this page for — niche, who they are, what they struggle with, what outcome they want.
 4. PAGE-TYPE SPECIFIC QUESTIONS — ask ALL that apply, one at a time:
-   - For WEBINAR pages: What is the webinar title or topic? When is it (date + time + timezone)? How long? Live or pre-recorded?
+   - For WEBINAR pages: What is the webinar title or topic? When is it (date + time + timezone)? How long? Live or pre-recorded? NOTE: Only ask live/pre-recorded if the user gave a specific date and time. If they have already indicated it is on-demand or selected time slots, that question is already answered — do NOT ask it.
    - For SALES pages: What is the offer name and price? What are the main benefits or modules?
    - For OPT-IN pages: What is the lead magnet name? What do they get?
    - For DISCOVERY CALL pages: What is the call about? Any qualifying questions?
