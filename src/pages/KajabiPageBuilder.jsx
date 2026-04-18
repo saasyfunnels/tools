@@ -1,11 +1,36 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BASE_SYSTEM_PROMPT = `You are a landing page and funnel design specialist working for SaaSy Funnels by Meg Burrage. You help coaches, course creators, and online business owners design beautiful, high-converting landing pages and funnel pages.
+// ─── Theme tokens (Kajabi light) ──────────────────────────────────────────────
+const kjBg      = "#FAFAFA";
+const kjSurface = "#FFFFFF";
+const kjCard    = "#F7F5FF";
+const kjBorder  = "rgba(0,0,0,0.08)";
+const kjText    = "#0A0A0A";
+const kjMuted   = "rgba(0,0,0,0.45)";
+const kjPink    = "#F4547A";
+const kjPurple  = "#6B35C8";
+const sfGradient = "linear-gradient(135deg,#F4547A,#6B35C8)";
 
-Your role is to walk the client through a warm, friendly intake conversation — one question at a time — then output a full visual HTML page design they can share with the SaaSy Funnels team to build.
+const btn = (extra = {}) => ({
+  border: "none", borderRadius: 8, padding: "10px 16px", cursor: "pointer",
+  fontSize: 13, fontFamily: "'DM Sans',sans-serif", color: "#fff",
+  fontWeight: 600, letterSpacing: "0.01em", ...extra,
+});
 
-You represent SaaSy Funnels by Meg Burrage. Your tone is warm, encouraging, plain-spoken, and a little bit sassy. You are talking to non-technical online business owners who may not know design or marketing jargon.
+// ─── System prompt ─────────────────────────────────────────────────────────────
+const BASE_SYSTEM_PROMPT = `You are a landing page and funnel design specialist working for SaaSy Funnels by Meg Burrage. You help coaches, course creators, and online business owners design beautiful, high-converting landing pages and funnel pages specifically for the Kajabi platform.
+
+Your role is to walk the client through a warm, friendly intake conversation — one question at a time — then output a complete, self-contained HTML page they can view in a browser, share with their team, and hand off for building in Kajabi.
+
+You represent SaaSy Funnels by Meg Burrage. Your tone is warm, encouraging, plain-spoken, and a little bit sassy. You are talking to non-technical online business owners.
+
+KAJABI-SPECIFIC KNOWLEDGE:
+- Kajabi uses "Landing Pages" for standalone opt-in/sales pages (built in the Pages section)
+- Kajabi Pipelines connect pages into funnels automatically
+- Kajabi has limited custom code access — designs should favour standard section-based layouts
+- Kajabi's theme engine supports custom CSS via the Theme Editor
+- Common Kajabi page types: Landing Page, Checkout Page, Thank You Page, Webinar Registration
 
 CONVERSION PRINCIPLES — always design with these in mind:
 - Every page should have ONE clear goal and ONE primary CTA — no competing CTAs
@@ -15,8 +40,8 @@ CONVERSION PRINCIPLES — always design with these in mind:
 - Remove friction: fewer form fields, one ask, clear next step
 - Mobile-first thinking: assume 70%+ of traffic is mobile
 
-PAGE TYPES you can design:
-- Opt-in / Lead magnet page
+PAGE TYPES you can design for Kajabi:
+- Opt-in / Lead magnet landing page
 - Sales page (short or long form)
 - Webinar registration page
 - VSL (Video Sales Letter) page
@@ -25,86 +50,74 @@ PAGE TYPES you can design:
 - Application / discovery call page
 - Waitlist page
 - Challenge registration page
-- Upsell / order bump page
+- Course or membership sales page
 
 FUNNEL FLOW KNOWLEDGE:
-- Webinar funnel: Registration → Confirmation (reference what they registered for + add to calendar) → Reminder sequence → Replay page
-- Lead magnet funnel: Opt-in → Thank you (deliver + set expectations for email) → Nurture sequence
-- Sales funnel: Sales page → Order form → Thank you / access page
-- Discovery call funnel: Application → Thank you (what to expect next) → Booking confirmation
-- Challenge funnel: Registration → Confirmation → Daily challenge pages → Sales page at end
+- Webinar Pipeline: Registration page → Confirmation page → Replay page
+- Lead Magnet Pipeline: Opt-in page → Thank you page → Email sequence
+- Sales Pipeline: Sales page → Checkout → Thank you / access page
+- Discovery Call Pipeline: Application → Thank you → Booking confirmation
 
-CONVERSATION RULES — these are non-negotiable:
-- Ask ONE question at a time. Never combine two questions in one message.
-- Keep acknowledgements to ONE sentence maximum before asking the next question. No extended validation or commentary.
-- Where questions have clear options, list them as labelled choices (a, b, c) so the client can pick quickly.
+CONVERSATION RULES — non-negotiable:
+- Ask ONE question at a time. Never combine two questions.
+- Keep acknowledgements to ONE sentence maximum before the next question.
+- Where questions have clear options, list them as labelled choices (a, b, c).
 - COPY and IMAGES are always asked as SEPARATE questions — never combined.
 
-INTAKE PROCESS — ask in this order, one at a time:
+INTAKE PROCESS — one at a time, in order:
 1. What is the page for? Give examples: opt-in page, sales page, webinar registration, thank you page, VSL, discovery call, waitlist.
-2. Single page or multi-page funnel? If multi-page, plan all pages upfront before designing.
+2. Single page or multi-page pipeline? If multi-page, plan all pages upfront before designing.
 3. Who is this page for — niche, who lands on it, what they struggle with, what outcome they want.
 4. What is the ONE goal — what should the visitor do? One CTA only.
 5. Brand voice — pick one: a) Warm and nurturing, b) Bold and direct, c) Fun and irreverent, d) Professional and polished, e) Empowering and confident.
 
 BRANDING INTAKE — one question, let them pick:
-a) Upload a screenshot of their site — this is the BEST option. Tell them: "Take a full-page screenshot using GoFullPage (free Chrome extension), your browser's built-in screenshot tool, or even a photo of your screen. Drop it here and I'll read your colours, fonts and image style directly."
-b) Upload a style guide PDF or brand doc
-c) Paste their hex colours and font names manually
-d) Share a URL — you'll fetch what you can from the HTML (note: some platforms like GHL render styles dynamically so colours may be approximate — a screenshot is more reliable)
-e) No branding yet — ask vibe questions and recommend a palette
+a) I'll upload a screenshot of my existing Kajabi site
+b) I'll upload my style guide PDF
+c) I'll paste my hex colours and font names
+d) Share a URL — you'll pull colours and fonts from it
+e) No branding yet — ask me vibe questions and recommend a palette
 
-When a screenshot is uploaded, analyse it carefully and extract:
-- The dominant brand colours (give hex codes where you can identify them)
-- The fonts used for headlines and body text
-- The overall visual style and vibe
-- What types of images are used and how (lifestyle photos, headshots, mockups, illustrations, etc.)
-Then confirm what you found before proceeding.
-
-VIBE QUESTIONS (only if option e):
-Ask these one at a time:
+VIBE QUESTIONS (only if option e) — ask one at a time:
 - Pick 3 words that describe your brand vibe (bold, warm, playful, luxe, minimal, earthy, clinical, feminine, edgy, etc.)
 - Any colours you love or hate?
 - Any brands whose look you love — even outside your industry?
 - Light and airy or dark and moody?
 
-COPY INTAKE — ask this as a standalone question:
+COPY INTAKE — standalone question:
 Do you have copy ready, or should I write placeholder copy?
-a) I have copy — paste it or upload a doc and I'll use your exact words
-b) Write me placeholder copy — niche-specific, clearly marked [PLACEHOLDER — TO BE REPLACED]
+a) I have copy — paste it and I'll use your exact words
+b) Write me placeholder copy — niche-specific, clearly marked [PLACEHOLDER]
 
-IMAGE INTAKE — ask this as a separate standalone question AFTER copy:
+IMAGE INTAKE — separate standalone question AFTER copy:
 What about images?
-a) I have images ready — upload them or describe what you have
-b) Note what type of image would work in each section — I'll source or create them later
+a) I have images — describe what you have and where they should go
+b) Use placeholder image boxes — I'll add real images later (or use AI generation)
 
-CONVERSION FLAGS — flag these issues warmly and offer to proceed anyway:
-- Two CTAs on one page: "Heads up — having two different calls to action on one page usually splits attention and hurts conversions. What's the ONE thing you want them to do?"
-- No social proof: "Most high-converting pages have some social proof above the fold or early on — do you have any testimonials, results, or credibility markers we can include?"
-- Too many form fields: "Every extra field on an opt-in form reduces conversions. Do we really need [field] or can we keep it to just name + email?"
-- Long copy for a cold audience: "For cold traffic (people who don't know you yet), shorter pages often convert better. Want me to design a lean version?"
+CONVERSION FLAGS — flag these warmly and offer to proceed anyway:
+- Two CTAs: "Heads up — two CTAs on one page usually splits attention and hurts conversions. What's the ONE thing you want them to do?"
+- No social proof: "Most high-converting pages have social proof early on — do you have any testimonials, results, or credibility markers?"
+- Too many form fields: "Every extra field reduces conversions. Do we really need [field] or can we keep it to name + email?"
 
 MULTI-PAGE PLANNING:
-If the client wants a funnel, plan ALL pages upfront before designing:
+If the client wants a pipeline, plan ALL pages upfront before designing any:
 - List all pages needed
-- Describe how they connect (what happens after each step)
-- Note any shared elements (header, footer, colour palette)
-- Design each page as a separate section in the output
+- Describe how they connect via Kajabi Pipeline
+- Note shared elements (header, footer, colour palette)
+- Output each as a separate complete HTML page in the JSON below
 
 When you have all information needed, say exactly:
 "Perfect — I have everything I need to design your page! Let me put this together now."
 
-Then output ONLY the JSON below — wrapped in triple-backtick json and triple-backtick markers exactly as shown. No other text after the closing triple-backtick.
+Then output ONLY valid JSON wrapped in triple-backtick json markers. No other text after the closing marker.
 
 OUTPUT FORMAT:
 \`\`\`json
 {
   "projectName": "string",
-  "pageType": "string",
-  "isMultiPage": true,
+  "platform": "Kajabi",
+  "isMultiPage": false,
   "niche": "string",
-  "targetAudience": "string",
-  "brandVoice": "string",
   "palette": {
     "primary": "#hex",
     "secondary": "#hex",
@@ -113,142 +126,73 @@ OUTPUT FORMAT:
     "text": "#hex"
   },
   "fonts": {
-    "headline": "string",
-    "body": "string"
+    "headline": "Google Font name",
+    "body": "Google Font name"
   },
   "pages": [
     {
       "id": 1,
       "name": "string",
+      "slug": "page-name-kebab",
       "pageType": "string",
       "goal": "string",
-      "cta": "string",
-      "sections": [
-        {
-          "id": 1,
-          "type": "Hero|Social Proof|Benefits|About|Offer Details|FAQ|CTA|Footer|Video|Countdown|Testimonials|Guarantee|Confirmation|Replay",
-          "headline": "string",
-          "subheadline": "string or null",
-          "body": "string or null",
-          "cta": "string or null",
-          "imageNote": "string or null",
-          "designNote": "string or null",
-          "isPlaceholder": true
-        }
-      ],
-      "conversionNotes": "string"
+      "html": "FULL SELF-CONTAINED HTML STRING HERE"
     }
-  ],
-  "brandPaletteExplanation": "string or null",
-  "overallNotes": "string",
-  "teamBriefing": "string"
+  ]
 }
 \`\`\`
-After the JSON, one warm closing sentence only.`;
+
+HTML GENERATION RULES — follow these precisely:
+
+1. STRUCTURE: Each page's "html" value must be a complete <!DOCTYPE html>...</html> document. Escape all double quotes inside the JSON string as \\". Escape newlines as \\n.
+
+2. FONTS: Always import from Google Fonts in the <head>. Use the fonts specified in the palette. Kajabi commonly uses clean, modern sans-serifs — DM Sans, Inter, Lato, Montserrat work well.
+
+3. COLOURS: Apply the palette throughout. Primary = main CTAs and key headings. Secondary = section backgrounds, cards. Accent = highlights, badges, underlines.
+
+4. IMAGE PLACEHOLDERS: Never use <img> tags unless the user provided real image URLs. Instead use:
+<div class="img-placeholder" data-label="Description of image needed" style="background:linear-gradient(135deg,#palette-secondary,#palette-primary22);border:2px dashed #palette-primary55;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#palette-primary;font-family:body-font,sans-serif;min-height:280px;">
+  <div style="font-size:32px;">🖼</div>
+  <div style="font-size:13px;font-weight:600;opacity:0.7;">IMAGE: Description of image needed</div>
+</div>
+
+5. KAJABI-APPROPRIATE SECTIONS: Design pages that would translate naturally to Kajabi's section-based builder. Use:
+- Clean hero sections with strong headline + subheadline + CTA
+- Benefit grids (2-3 columns on desktop, stacked on mobile)
+- Testimonial sections (card style or pull-quote style)
+- About/credibility section
+- FAQ accordions (visual, not functional — show first item open)
+- Clear CTA sections with high contrast
+- Simple, clean footer with privacy/terms note
+Kajabi pages tend to be cleaner and lighter than GHL pages — lean into this.
+
+6. MOBILE: Include a <style> block with @media (max-width: 768px) rules. Columns stack, font sizes reduce, padding tightens.
+
+7. CTA BUTTONS: Style with brand colours, border-radius:40px, padding:16px 40px, font-weight:700.
+
+8. COPY: If the user has copy, use it exactly. If placeholder, write specific niche-appropriate copy clearly marked with <!-- PLACEHOLDER --> HTML comments. Never write generic "Lorem ipsum".
+
+9. FOOTER: Every page ends with a minimal footer: SaaSy Funnels watermark in small text, muted colour, centered.
+
+10. MULTI-PAGE: Each page is a complete standalone HTML document. They share the same palette and fonts but are independent files. Include a note at the bottom of each page about the next step in the pipeline.`;
 
 const PROMPTS = [
-  "Design a lead magnet opt-in page for my freebie",
-  "Design a webinar registration + confirmation page funnel",
-  "Design a sales page for my online course or program",
-  "Design a VSL (video sales letter) page",
-  "Design a discovery call application page",
+  "Design a Kajabi opt-in page for my lead magnet",
+  "Design a Kajabi webinar registration page",
+  "Design a Kajabi sales page for my course or program",
+  "Design a Kajabi discovery call application page",
+  "Design a full Kajabi pipeline funnel",
 ];
 
-const SECTION_COLORS = {
-  "Hero":         { bg:"#F3EEFF", border:"#6B35C8", icon:"🦸" },
-  "Social Proof": { bg:"#ECFDF3", border:"#16A34A", icon:"⭐" },
-  "Benefits":     { bg:"#EFF6FF", border:"#2563EB", icon:"✨" },
-  "About":        { bg:"#FDF2F8", border:"#DB2777", icon:"👤" },
-  "Offer Details":{ bg:"#FFFBEB", border:"#D97706", icon:"📦" },
-  "FAQ":          { bg:"#F5F3FF", border:"#7C3AED", icon:"❓" },
-  "CTA":          { bg:"#FEF2F2", border:"#F4547A", icon:"🎯" },
-  "Footer":       { bg:"#F9FAFB", border:"#9CA3AF", icon:"📄" },
-  "Video":        { bg:"#F3EEFF", border:"#6B35C8", icon:"🎬" },
-  "Countdown":    { bg:"#FFFBEB", border:"#D97706", icon:"⏱" },
-  "Testimonials": { bg:"#ECFDF3", border:"#16A34A", icon:"💬" },
-  "Guarantee":    { bg:"#ECFDF3", border:"#059669", icon:"🛡" },
-  "Confirmation": { bg:"#EFF6FF", border:"#2563EB", icon:"✅" },
-  "Replay":       { bg:"#F3EEFF", border:"#7C3AED", icon:"▶️" },
-};
-
-// Kajabi light theme tokens
-const kjPink   = "#F4547A";
-const kjPurple = "#6B35C8";
-const kjBg     = "#FFFFFF";
-const kjSurface = "#FAFAFA";
-const kjBorder = "#E5E7EB";
-const kjBorderAccent = "#DDD0F5";
-const kjText   = "#0A0A0A";
-const kjMuted  = "#6B7280";
-const kjSubtle = "#F9FAFB";
-
-const sfGradient = "linear-gradient(135deg,#F4547A,#6B35C8)";
-const pinkGrad   = "linear-gradient(135deg,#F4547A,#c73060)";
-const purpleGrad = "linear-gradient(135deg,#6B35C8,#4A1A9E)";
-
-const btn = (extra={}) => ({
-  border:"none", borderRadius:8, padding:"10px 16px", cursor:"pointer",
-  fontSize:13, fontFamily:"'DM Sans',sans-serif", color:"#fff",
-  fontWeight:600, letterSpacing:"0.01em", ...extra
-});
-
-function encodeSpec(data) { try { return btoa(encodeURIComponent(JSON.stringify(data))); } catch(e) { return ""; } }
-function decodeSpec(str) { try { return JSON.parse(decodeURIComponent(atob(str))); } catch(e) { return null; } }
-function getShareUrl(data) { const e=encodeSpec(data); const base=window.location.href.split("?")[0]; return `${base}?spec=${e}`; }
-
-function SFLogo({ size=32 }) {
-  return (
-    <div style={{
-      width:size, height:size, borderRadius:10, background:sfGradient,
-      display:"flex",alignItems:"center",justifyContent:"center",
-      fontSize:size*0.4, fontWeight:700, color:"#fff",
-      fontFamily:"'DM Sans',sans-serif", letterSpacing:"-0.02em", flexShrink:0
-    }}>SF</div>
-  );
-}
-
-function TopNav({ onBack }) {
-  return (
-    <div style={{
-      position:"sticky", top:0, zIndex:100,
-      background:"rgba(255,255,255,0.97)", backdropFilter:"blur(12px)",
-      borderBottom:"1px solid "+kjBorder,
-      padding:"0 24px", height:56,
-      display:"flex", alignItems:"center", justifyContent:"space-between"
-    }}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
-        {onBack && (
-          <button onClick={onBack} style={{
-            background:"#F9FAFB", border:"1px solid #E5E7EB",
-            borderRadius:8, padding:"6px 12px", color:"#6B7280",
-            fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif",
-            display:"flex", alignItems:"center", gap:5, marginRight:4,
-            transition:"all 0.15s",
-          }}
-          onMouseEnter={e=>{e.currentTarget.style.color=kjText;e.currentTarget.style.borderColor=kjBorderAccent;}}
-          onMouseLeave={e=>{e.currentTarget.style.color="#6B7280";e.currentTarget.style.borderColor="#E5E7EB";}}
-          >← Dashboard</button>
-        )}
-        <SFLogo size={32}/>
-        <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:700,color:kjText,letterSpacing:"-0.01em"}}>SaaSy Funnels</span>
-      </div>
-      <div style={{display:"flex",alignItems:"center",gap:2,background:"#F3F4F6",borderRadius:8,padding:"4px 6px",border:"1px solid "+kjBorder}}>
-        <div style={{padding:"5px 14px",borderRadius:6,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",background:"#fff",color:kjText,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>Kajabi</div>
-        <div style={{padding:"5px 14px",borderRadius:6,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",background:"transparent",color:kjMuted}}>GHL</div>
-      </div>
-    </div>
-  );
-}
-
-function Dots({ msg }) {
-  return (
-    <div style={{display:"flex",flexDirection:"column",gap:6,padding:"14px 18px",background:"#fff",border:"1px solid "+kjBorderAccent,borderRadius:"0 18px 18px 18px",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",maxWidth:"72%"}}>
-      <div style={{display:"flex",alignItems:"center",gap:5}}>
-        {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:kjPurple,animation:"kjBounce 1.2s ease-in-out infinite",animationDelay:`${i*0.2}s`}}/>)}
-      </div>
-      {msg && <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:kjMuted,fontStyle:"italic",animation:"kjFadeIn 0.4s ease"}}>{msg}</div>}
-    </div>
-  );
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+function parseJSON(text) {
+  try {
+    const m = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (m) return JSON.parse(m[1].trim());
+    const s = text.indexOf("{"); const e = text.lastIndexOf("}");
+    if (s > -1 && e > s) return JSON.parse(text.slice(s, e + 1));
+  } catch { return null; }
+  return null;
 }
 
 function extractChips(text) {
@@ -261,47 +205,87 @@ function extractChips(text) {
   return chips.length >= 2 && chips.length <= 6 ? chips : [];
 }
 
-function QuickChips({ text, onSelect }) {
-  const chips = extractChips(text);
-  if (!chips.length) return null;
+function stripJSON(content) {
+  let c = content.replace(/```[\s\S]*?```/g, "").trim();
+  const keys = ["projectName", "pageType", "isMultiPage", "pages", "palette"];
+  if (keys.some(k => c.includes('"' + k + '"'))) {
+    const s = c.indexOf("{"); const e = c.lastIndexOf("}");
+    if (s > -1 && e > s) c = (c.slice(0, s) + c.slice(e + 1)).trim();
+  }
+  return c.replace(/^json\s*/i, "").trim() || "✦ Your page design is ready — see below!";
+}
+
+// ─── UI Components ─────────────────────────────────────────────────────────────
+function SFLogo({ size = 32 }) {
   return (
-    <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10,marginLeft:44}}>
-      {chips.map((chip, i) => (
-        <button key={i} onClick={() => onSelect(chip)}
-          style={{
-            background:"#F9FAFB", border:"1px solid "+kjBorderAccent,
-            borderRadius:20, padding:"7px 14px", cursor:"pointer",
-            fontSize:13, color:kjText, fontFamily:"'DM Sans',sans-serif",
-            fontWeight:500, transition:"all 0.15s",
+    <div style={{
+      width: size, height: size, borderRadius: 10, background: sfGradient,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: size * 0.4, fontWeight: 700, color: "#fff",
+      fontFamily: "'DM Sans',sans-serif", letterSpacing: "-0.02em", flexShrink: 0,
+    }}>SF</div>
+  );
+}
+
+function TopNav({ onBack }) {
+  return (
+    <div style={{
+      position: "sticky", top: 0, zIndex: 100,
+      background: "rgba(250,250,250,0.95)", backdropFilter: "blur(12px)",
+      borderBottom: "1px solid rgba(0,0,0,0.08)",
+      padding: "0 24px", height: 56,
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {onBack && (
+          <button onClick={onBack} style={{
+            background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.1)",
+            borderRadius: 8, padding: "6px 12px", color: kjMuted,
+            fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+            display: "flex", alignItems: "center", gap: 5, marginRight: 4,
           }}
-          onMouseEnter={e=>{e.currentTarget.style.background=kjBorderAccent;e.currentTarget.style.borderColor=kjPurple;}}
-          onMouseLeave={e=>{e.currentTarget.style.background="#F9FAFB";e.currentTarget.style.borderColor=kjBorderAccent;}}
-        >
-          {chip}
-        </button>
-      ))}
+          onMouseEnter={e => { e.currentTarget.style.color = kjText; e.currentTarget.style.borderColor = "rgba(107,53,200,0.3)"; }}
+          onMouseLeave={e => { e.currentTarget.style.color = kjMuted; e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)"; }}
+          >← Dashboard</button>
+        )}
+        <SFLogo size={32} />
+        <span style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 16, fontWeight: 700, color: kjText }}>SaaSy Funnels</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(0,0,0,0.04)", borderRadius: 8, padding: "4px 6px", border: "1px solid rgba(0,0,0,0.08)" }}>
+        <div style={{ padding: "5px 14px", borderRadius: 6, fontSize: 13, fontWeight: 600, fontFamily: "'DM Sans',sans-serif", background: sfGradient, color: "#fff" }}>Kajabi</div>
+        <div style={{ padding: "5px 14px", borderRadius: 6, fontSize: 13, fontWeight: 600, fontFamily: "'DM Sans',sans-serif", background: "transparent", color: kjMuted }}>GHL</div>
+      </div>
+    </div>
+  );
+}
+
+function Dots({ msg }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "14px 18px", background: kjCard, border: "1px solid " + kjBorder, borderRadius: "0 18px 18px 18px", maxWidth: "72%" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: kjPink, animation: "kjBounce 1.2s ease-in-out infinite", animationDelay: `${i * 0.2}s` }} />
+        ))}
+      </div>
+      {msg && <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12.5, color: kjMuted, fontStyle: "italic" }}>{msg}</div>}
     </div>
   );
 }
 
 function Bubble({ msg }) {
-  const u = msg.role==="user";
+  const isUser = msg.role === "user";
   return (
-    <div style={{display:"flex",justifyContent:u?"flex-end":"flex-start",marginBottom:14,animation:"kjFadeUp 0.3s ease forwards"}}>
-      {!u && (
-        <div style={{width:34,height:34,borderRadius:"50%",background:sfGradient,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,marginRight:10,flexShrink:0,marginTop:2,color:"#fff",fontWeight:700}}>✦</div>
+    <div style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom: 12, alignItems: "flex-end", gap: 8 }}>
+      {!isUser && (
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: sfGradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0, color: "#fff", fontWeight: 700 }}>✦</div>
       )}
       <div style={{
-        maxWidth:"72%",
-        background: u ? sfGradient : "#fff",
-        color: u ? "#fff" : kjText,
-        padding:"13px 18px",
-        borderRadius: u ? "18px 18px 4px 18px" : "0 18px 18px 18px",
-        fontSize:14.5, lineHeight:1.65,
-        border: u ? "none" : "1px solid "+kjBorderAccent,
-        boxShadow: u ? "0 4px 16px rgba(244,84,122,0.2)" : "0 1px 4px rgba(0,0,0,0.06)",
-        whiteSpace:"pre-wrap",
-        fontFamily:"'DM Sans',sans-serif"
+        maxWidth: "72%", padding: "12px 16px",
+        background: isUser ? sfGradient : kjCard,
+        border: isUser ? "none" : "1px solid " + kjBorder,
+        borderRadius: isUser ? "18px 18px 4px 18px" : "0 18px 18px 18px",
+        fontSize: 14, color: isUser ? "#fff" : kjText, lineHeight: 1.65,
+        fontFamily: "'DM Sans',sans-serif", whiteSpace: "pre-wrap",
       }}>
         {msg.content}
       </div>
@@ -309,144 +293,294 @@ function Bubble({ msg }) {
   );
 }
 
-function PaletteSwatch({ palette }) {
-  if (!palette) return null;
+function QuickChips({ text, onSelect }) {
+  const chips = extractChips(text);
+  if (!chips.length) return null;
   return (
-    <div style={{display:"flex",gap:6,margin:"8px 0 4px",flexWrap:"wrap"}}>
-      {Object.entries(palette).map(([k,v])=>(
-        <div key={k} style={{display:"flex",alignItems:"center",gap:5,background:"#fff",border:"1px solid "+kjBorder,borderRadius:6,padding:"4px 8px"}}>
-          <div style={{width:16,height:16,borderRadius:4,background:v,border:"1px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
-          <span style={{fontSize:10,color:kjMuted,fontFamily:"monospace"}}>{v}</span>
-          <span style={{fontSize:10,color:kjText,fontFamily:"'DM Sans',sans-serif",textTransform:"capitalize"}}>{k}</span>
-        </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10, marginLeft: 44 }}>
+      {chips.map((chip, i) => (
+        <button key={i} onClick={() => onSelect(chip)}
+          style={{
+            background: "#fff", border: `1px solid ${kjPurple}33`,
+            borderRadius: 20, padding: "7px 14px", cursor: "pointer",
+            fontSize: 13, color: kjText, fontFamily: "'DM Sans',sans-serif",
+            fontWeight: 500, transition: "all 0.15s", boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = `${kjPurple}0f`; e.currentTarget.style.borderColor = kjPurple; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = `${kjPurple}33`; }}
+        >{chip}</button>
       ))}
     </div>
   );
 }
 
-function SectionCard({ section, pageAccent }) {
-  const c = SECTION_COLORS[section.type] || SECTION_COLORS["Footer"];
-  const accent = pageAccent || c.border;
-  return (
-    <div style={{background:c.bg,border:`1px solid ${c.border}33`,borderRadius:12,padding:"14px 16px",marginBottom:10,position:"relative"}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-        <span style={{fontSize:16}}>{c.icon}</span>
-        <span style={{fontSize:10,fontWeight:700,color:c.border,textTransform:"uppercase",letterSpacing:"0.08em",fontFamily:"'DM Sans',sans-serif"}}>{section.type}</span>
-        {section.isPlaceholder&&(
-          <span style={{marginLeft:"auto",fontSize:10,background:"#FFFBEB",border:"1px solid #D97706",color:"#92400E",borderRadius:20,padding:"2px 8px",fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>Placeholder copy</span>
-        )}
-      </div>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:700,color:kjText,marginBottom:4,lineHeight:1.35}}>{section.headline}</div>
-      {section.subheadline&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,color:kjText,marginBottom:6,lineHeight:1.45,opacity:0.8}}>{section.subheadline}</div>}
-      {section.body&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:kjMuted,lineHeight:1.6,marginBottom:6}}>{section.body}</div>}
-      {section.cta&&(
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:sfGradient,color:"#fff",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",marginTop:4}}>
-          → {section.cta}
-        </div>
-      )}
-      {section.imageNote&&(
-        <div style={{marginTop:8,background:"#fff",border:"1px dashed "+kjBorderAccent,borderRadius:8,padding:"8px 12px",fontSize:12,color:kjPurple,fontFamily:"'DM Sans',sans-serif"}}>
-          🖼 <strong>Image:</strong> {section.imageNote}
-        </div>
-      )}
-      {section.designNote&&(
-        <div style={{marginTop:6,background:"rgba(107,53,200,0.06)",border:"1px solid "+kjBorderAccent,borderRadius:8,padding:"7px 12px",fontSize:12,color:kjPurple,fontFamily:"'DM Sans',sans-serif"}}>
-          💡 <strong>Design note:</strong> {section.designNote}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PageCard({ page, idx, totalPages, palette }) {
-  const PAGE_ACCENTS = [kjPink, kjPurple, "#16A34A", "#D97706", "#2563EB", "#DB2777"];
-  const accent = PAGE_ACCENTS[idx % PAGE_ACCENTS.length];
-  const [expanded, setExpanded] = useState(true);
+// ─── Branding confirmation card ────────────────────────────────────────────────
+function BrandingCard({ branding, onConfirm, onTweak, onWrong }) {
+  const swatches = branding.colours?.slice(0, 6) || [];
+  const fonts = branding.fonts?.slice(0, 3) || [];
+  const googleFonts = branding.googleFonts?.slice(0, 3) || [];
+  const allFonts = [...new Set([...googleFonts, ...fonts])].slice(0, 4);
 
   return (
-    <div style={{background:"#fff",borderRadius:16,overflow:"hidden",boxShadow:"0 2px 12px rgba(0,0,0,0.07)",marginBottom:20,border:`1px solid ${accent}33`}}>
-      <div style={{background:`linear-gradient(135deg,${accent}15,${accent}05)`,borderBottom:`2px solid ${accent}`,padding:"14px 18px",cursor:totalPages>1?"pointer":"default",display:"flex",alignItems:"center",gap:12}} onClick={()=>totalPages>1&&setExpanded(e=>!e)}>
-        <div style={{width:36,height:36,borderRadius:10,background:accent,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,flexShrink:0,fontFamily:"'DM Sans',sans-serif"}}>P{page.id}</div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:10,fontWeight:700,color:accent,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:2,fontFamily:"'DM Sans',sans-serif"}}>📄 {page.pageType}</div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:700,color:kjText}}>{page.name}</div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:kjMuted,marginTop:2}}>Goal: {page.goal}</div>
+    <div style={{ margin: "10px 0 10px 44px", background: "#fff", border: `1px solid ${kjPurple}22`, borderRadius: 14, overflow: "hidden", animation: "kjFadeUp 0.4s ease", boxShadow: "0 4px 20px rgba(107,53,200,0.08)" }}>
+      <div style={{ background: `linear-gradient(135deg,${kjPurple}0f,${kjPink}08)`, borderBottom: `1px solid ${kjPurple}15`, padding: "12px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 16 }}>🎨</span>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: kjPurple, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'DM Sans',sans-serif" }}>Brand detected</div>
+          <div style={{ fontSize: 13, color: kjText, fontFamily: "'DM Sans',sans-serif", fontWeight: 600 }}>{branding.title || branding.url}</div>
         </div>
-        {totalPages>1&&<div style={{fontSize:14,color:kjMuted,transition:"transform 0.2s",transform:expanded?"rotate(90deg)":"rotate(0deg)"}}>▶</div>}
       </div>
-
-      {expanded&&(
-        <div style={{padding:"16px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,background:kjSubtle,borderRadius:10,padding:"10px 14px",border:"1px solid "+kjBorder}}>
-            <span style={{fontSize:14}}>🎯</span>
-            <div>
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:kjPurple,textTransform:"uppercase",letterSpacing:"0.07em"}}>Primary CTA: </span>
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:kjText}}>{page.cta}</span>
+      <div style={{ padding: "14px 16px" }}>
+        {swatches.length > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: kjMuted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontFamily: "'DM Sans',sans-serif" }}>Colours found</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {swatches.map((c, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, background: "#F9F9F9", border: "1px solid " + kjBorder, borderRadius: 8, padding: "5px 10px" }}>
+                  <div style={{ width: 18, height: 18, borderRadius: 4, background: c, border: "1px solid rgba(0,0,0,0.1)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: kjMuted, fontFamily: "monospace" }}>{c}</span>
+                </div>
+              ))}
             </div>
           </div>
-
-          {page.sections?.map((section,i)=>(
-            <div key={section.id}>
-              <SectionCard section={section} pageAccent={accent}/>
-              {i<page.sections.length-1&&<div style={{textAlign:"center",fontSize:11,color:kjBorderAccent,margin:"4px 0",fontFamily:"'DM Sans',sans-serif"}}>↓ next section</div>}
+        )}
+        {allFonts.length > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: kjMuted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontFamily: "'DM Sans',sans-serif" }}>Fonts found</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {allFonts.map((f, i) => (
+                <div key={i} style={{ background: "#F9F9F9", border: "1px solid " + kjBorder, borderRadius: 8, padding: "5px 12px", fontSize: 12, color: kjText, fontFamily: "'DM Sans',sans-serif" }}>{f}</div>
+              ))}
             </div>
-          ))}
-
-          {page.conversionNotes&&(
-            <div style={{marginTop:12,background:"#FFFBEB",border:"1px solid #F59E0B55",borderRadius:10,padding:"12px 14px"}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#D97706",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4,fontFamily:"'DM Sans',sans-serif"}}>💡 Conversion notes</div>
-              <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:"#92400E",lineHeight:1.6}}>{page.conversionNotes}</div>
-            </div>
-          )}
+          </div>
+        )}
+        {branding.vibe && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: kjMuted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, fontFamily: "'DM Sans',sans-serif" }}>Vibe</div>
+            <div style={{ display: "inline-block", background: `${kjPurple}0f`, border: `1px solid ${kjPurple}22`, borderRadius: 20, padding: "4px 14px", fontSize: 12, color: kjPurple, fontFamily: "'DM Sans',sans-serif", fontWeight: 500 }}>{branding.vibe}</div>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+          <button onClick={onConfirm} style={{ ...btn(), background: sfGradient, flex: 1, minWidth: 100, boxShadow: "0 4px 12px rgba(244,84,122,0.2)" }}>✓ Looks right — use this</button>
+          <button onClick={onTweak} style={{ ...btn(), background: "transparent", border: `1px solid ${kjPurple}33`, color: kjPurple, flex: 1, minWidth: 100 }}>✏ Tweak it</button>
+          <button onClick={onWrong} style={{ ...btn(), background: "transparent", border: "1px solid " + kjBorder, color: kjMuted }}>✕ Looks wrong</button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
-function PageDesign({ data }) {
-  const isMulti = data.isMultiPage && data.pages?.length > 1;
-  const pages = data.pages || [];
+// ─── Palette picker ─────────────────────────────────────────────────────────────
+const PALETTE_OPTIONS = [
+  { name: "Coral & Cream", primary: "#E8614A", secondary: "#FFF5F0", accent: "#2D2D2D", background: "#FFFFFF", text: "#1A1A1A", vibe: "Warm · Feminine · Inviting" },
+  { name: "Deep Violet", primary: "#6B35C8", secondary: "#F3EEFF", accent: "#F4547A", background: "#FFFFFF", text: "#0D0B14", vibe: "Bold · Premium · Creative" },
+  { name: "Ocean Teal", primary: "#0891B2", secondary: "#E0F7FA", accent: "#F59E0B", background: "#FFFFFF", text: "#0C1821", vibe: "Fresh · Trustworthy · Modern" },
+  { name: "Forest & Gold", primary: "#2D6A4F", secondary: "#F0FAF5", accent: "#D4A017", background: "#FFFFFF", text: "#1A2E25", vibe: "Earthy · Natural · Premium" },
+  { name: "Midnight Rose", primary: "#C2185B", secondary: "#FFF0F5", accent: "#FFB300", background: "#FFFFFF", text: "#1A000D", vibe: "Bold · Luxe · Dramatic" },
+  { name: "Slate & Sky", primary: "#334155", secondary: "#F1F5F9", accent: "#3B82F6", background: "#FFFFFF", text: "#0F172A", vibe: "Professional · Clean · Minimal" },
+  { name: "Peach Blossom", primary: "#F97316", secondary: "#FFF7ED", accent: "#7C3AED", background: "#FFFFFF", text: "#1C0A00", vibe: "Energetic · Fun · Warm" },
+  { name: "Sage & Linen", primary: "#6B7C5E", secondary: "#F5F3EE", accent: "#C9A96E", background: "#FAF8F5", text: "#2C2C2C", vibe: "Calm · Organic · Mindful" },
+];
+
+function PalettePicker({ onSelect }) {
+  const [hovered, setHovered] = useState(null);
 
   return (
-    <div style={{padding:"24px 20px"}}>
-      <div style={{textAlign:"center",marginBottom:22}}>
-        <div style={{display:"inline-block",background:sfGradient,color:"#fff",borderRadius:100,padding:"5px 18px",fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10,fontFamily:"'DM Sans',sans-serif",fontWeight:700}}>
-          {isMulti ? `✦ ${pages.length}-Page Funnel Design` : "✦ Page Design"}
-        </div>
-        <h2 style={{fontFamily:"'DM Sans',sans-serif",fontSize:22,fontWeight:700,color:kjText,margin:"0 0 4px"}}>{data.projectName}</h2>
-        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:kjMuted,margin:"0 0 10px"}}>{data.niche} · {data.targetAudience}</p>
-        {data.palette&&<PaletteSwatch palette={data.palette}/>}
-        {data.brandPaletteExplanation&&<p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:kjMuted,margin:"8px 0 0",fontStyle:"italic",lineHeight:1.5}}>{data.brandPaletteExplanation}</p>}
+    <div style={{ margin: "10px 0 10px 44px", animation: "kjFadeUp 0.4s ease" }}>
+      <div style={{ fontSize: 13, color: kjMuted, fontFamily: "'DM Sans',sans-serif", marginBottom: 12, lineHeight: 1.5 }}>
+        Here are some palette options — pick one to start, or ask me to show different ones:
       </div>
-
-      {isMulti&&(
-        <div style={{background:kjSubtle,border:"1px solid "+kjBorderAccent,borderRadius:10,padding:"12px 16px",marginBottom:20,fontFamily:"'DM Sans',sans-serif",fontSize:13,color:kjMuted,lineHeight:1.6}}>
-          🗺 <strong style={{color:kjText}}>This is a {pages.length}-page funnel.</strong> Each page is designed below. Click any page header to expand or collapse. Build them in the order shown — each connects to the next.
-        </div>
-      )}
-
-      {pages.map((page,i)=>(
-        <PageCard key={page.id} page={page} idx={i} totalPages={pages.length} palette={data.palette}/>
-      ))}
-
-      {data.teamBriefing&&(
-        <div style={{marginTop:8,background:"#F3EEFF",border:"1px solid "+kjBorderAccent,borderRadius:14,padding:"18px 20px"}}>
-          <div style={{fontSize:11,fontWeight:700,color:kjPurple,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,fontFamily:"'DM Sans',sans-serif"}}>📋 Brief for the SaaSy Funnels Team</div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:kjMuted,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{data.teamBriefing}</div>
-        </div>
-      )}
-
-      {data.overallNotes&&(
-        <div style={{marginTop:12,background:kjSubtle,border:"1px solid "+kjBorder,borderRadius:12,padding:"14px 16px"}}>
-          <div style={{fontSize:11,fontWeight:700,color:kjMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Notes</div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:kjMuted,lineHeight:1.6}}>{data.overallNotes}</div>
-        </div>
-      )}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {PALETTE_OPTIONS.map((p, i) => (
+          <div key={i}
+            onClick={() => onSelect(p)}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+            style={{
+              background: hovered === i ? "#fff" : kjCard,
+              border: `1px solid ${hovered === i ? kjPurple + "44" : kjBorder}`,
+              borderRadius: 10, padding: "10px 12px", cursor: "pointer",
+              transition: "all 0.15s", transform: hovered === i ? "translateY(-1px)" : "none",
+              boxShadow: hovered === i ? "0 4px 16px rgba(107,53,200,0.1)" : "none",
+            }}>
+            <div style={{ display: "flex", gap: 3, marginBottom: 8 }}>
+              {[p.primary, p.secondary, p.accent, p.background].map((c, ci) => (
+                <div key={ci} style={{ flex: 1, height: 20, borderRadius: 4, background: c, border: "1px solid rgba(0,0,0,0.08)" }} />
+              ))}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: kjText, fontFamily: "'DM Sans',sans-serif", marginBottom: 2 }}>{p.name}</div>
+            <div style={{ fontSize: 10, color: kjMuted, fontFamily: "'DM Sans',sans-serif" }}>{p.vibe}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
+// ─── Page output panel ─────────────────────────────────────────────────────────
+function PageOutput({ projectData, onAddImages }) {
+  const pages = projectData.pages || [];
+  const [pageUrls, setPageUrls] = useState({});
+  const [saving, setSaving] = useState({});
+  const [generatingImages, setGeneratingImages] = useState(false);
+  const [imageProgress, setImageProgress] = useState("");
+  const [copiedIdx, setCopiedIdx] = useState(null);
+
+  const savePage = async (page) => {
+    if (pageUrls[page.id]) return pageUrls[page.id];
+    setSaving(prev => ({ ...prev, [page.id]: true }));
+    try {
+      const slug = `${projectData.projectName || "page"}-${page.slug || page.name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const res = await fetch("/api/save-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ html: page.html, filename: slug }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPageUrls(prev => ({ ...prev, [page.id]: data.url }));
+        return data.url;
+      }
+    } catch (e) {
+      console.error("Save failed:", e);
+    } finally {
+      setSaving(prev => ({ ...prev, [page.id]: false }));
+    }
+    return null;
+  };
+
+  useEffect(() => { pages.forEach(page => savePage(page)); }, []);
+
+  const openPage = async (page) => {
+    const url = pageUrls[page.id] || await savePage(page);
+    if (url) window.open(url, "_blank");
+  };
+
+  const copyLink = async (page, idx) => {
+    const url = pageUrls[page.id] || await savePage(page);
+    if (url) {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopiedIdx(idx);
+        setTimeout(() => setCopiedIdx(null), 3000);
+      });
+    }
+  };
+
+  const downloadPage = (page) => {
+    const blob = new Blob([page.html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(page.slug || page.name || "page").replace(/\s+/g, "-")}-kajabi.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleAddImages = async () => {
+    setGeneratingImages(true);
+    await onAddImages(setImageProgress, (updatedPages) => {
+      setGeneratingImages(false);
+      setImageProgress("");
+      updatedPages.forEach(page => {
+        setSaving(prev => ({ ...prev, [page.id]: true }));
+        const slug = `${projectData.projectName || "page"}-${page.slug || page.name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        fetch("/api/save-page", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ html: page.html, filename: slug }),
+        }).then(r => r.json()).then(data => {
+          if (data.success) setPageUrls(prev => ({ ...prev, [page.id]: data.url }));
+        }).finally(() => setSaving(prev => ({ ...prev, [page.id]: false })));
+      });
+    });
+  };
+
+  return (
+    <div style={{ padding: "20px 16px", animation: "kjFadeUp 0.4s ease" }}>
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <div style={{ display: "inline-block", background: sfGradient, color: "#fff", borderRadius: 100, padding: "5px 18px", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, fontFamily: "'DM Sans',sans-serif", fontWeight: 700 }}>
+          {pages.length > 1 ? `✦ ${pages.length}-Page Pipeline` : "✦ Page Design Ready"}
+        </div>
+        <h2 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 20, fontWeight: 700, color: kjText, margin: "0 0 4px" }}>{projectData.projectName}</h2>
+        {projectData.palette && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+            {Object.entries(projectData.palette).map(([k, v]) => (
+              <div key={k} style={{ display: "flex", alignItems: "center", gap: 5, background: "#F9F9F9", border: "1px solid " + kjBorder, borderRadius: 8, padding: "4px 8px" }}>
+                <div style={{ width: 14, height: 14, borderRadius: 3, background: v, border: "1px solid rgba(0,0,0,0.1)" }} />
+                <span style={{ fontSize: 10, color: kjMuted, fontFamily: "monospace" }}>{v}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {pages.map((page, i) => (
+          <div key={page.id} style={{ background: "#fff", border: "1px solid " + kjBorder, borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ background: `linear-gradient(135deg,${kjPurple}0f,${kjPink}08)`, borderBottom: "1px solid " + kjBorder, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: sfGradient, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>P{page.id}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, color: kjMuted, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: "'DM Sans',sans-serif" }}>{page.pageType}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: kjText, fontFamily: "'Playfair Display',serif" }}>{page.name}</div>
+              </div>
+              {saving[page.id] && <div style={{ fontSize: 11, color: kjMuted, fontFamily: "'DM Sans',sans-serif" }}>Saving…</div>}
+            </div>
+
+            <div style={{ padding: "12px 14px", display: "flex", gap: 7, flexWrap: "wrap" }}>
+              <button onClick={() => openPage(page)} style={{ ...btn(), background: sfGradient, flex: 2, minWidth: 120, boxShadow: "0 4px 12px rgba(244,84,122,0.2)", fontSize: 12 }}>
+                🔗 Open in new tab
+              </button>
+              <button onClick={() => copyLink(page, i)}
+                style={{ ...btn(), background: copiedIdx === i ? "linear-gradient(135deg,#00C8A0,#009B7A)" : "transparent", border: `1px solid ${copiedIdx === i ? "#00C8A0" : kjPurple + "33"}`, color: copiedIdx === i ? "#fff" : kjPurple, flex: 1, minWidth: 80, fontSize: 12, transition: "all 0.3s" }}>
+                {copiedIdx === i ? "✓ Copied" : "Copy link"}
+              </button>
+              <button onClick={() => downloadPage(page)} style={{ ...btn(), background: "transparent", border: "1px solid " + kjBorder, color: kjMuted, fontSize: 12 }}>↓</button>
+            </div>
+
+            {pageUrls[page.id] && (
+              <div style={{ padding: "0 14px 12px" }}>
+                <div style={{ background: "#F9F9F9", border: "1px solid " + kjBorder, borderRadius: 8, padding: "8px 12px", fontSize: 11, color: kjMuted, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {pageUrls[page.id]}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* AI Images */}
+      <div style={{ marginTop: 16, background: `${kjPurple}08`, border: `1px solid ${kjPurple}22`, borderRadius: 12, padding: "14px 16px" }}>
+        {generatingImages ? (
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: kjPurple, fontFamily: "'DM Sans',sans-serif", marginBottom: 6 }}>✦ Generating AI images…</div>
+            <div style={{ fontSize: 12, color: kjMuted, fontFamily: "'DM Sans',sans-serif" }}>{imageProgress || "Reading your page design…"}</div>
+            <div style={{ marginTop: 8, height: 3, background: `${kjPurple}22`, borderRadius: 2, overflow: "hidden" }}>
+              <div style={{ height: "100%", background: sfGradient, borderRadius: 2, animation: "kjProgress 2s ease-in-out infinite" }} />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: kjPurple, fontFamily: "'DM Sans',sans-serif", marginBottom: 4 }}>✨ Want real images on your page?</div>
+            <div style={{ fontSize: 12, color: kjMuted, fontFamily: "'DM Sans',sans-serif", marginBottom: 10, lineHeight: 1.5 }}>
+              I can generate AI images for each placeholder — professional marketing photos that match your brand.
+            </div>
+            <button onClick={handleAddImages} style={{ ...btn(), background: sfGradient, width: "100%", boxShadow: "0 4px 12px rgba(244,84,122,0.15)" }}>
+              ✦ Generate AI images for this page
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: 10, background: "#F9F9F9", border: "1px solid " + kjBorder, borderRadius: 12, padding: "12px 16px" }}>
+        <div style={{ fontSize: 11, color: kjMuted, fontFamily: "'DM Sans',sans-serif", lineHeight: 1.5 }}>
+          📋 <strong style={{ color: kjText }}>Ready to build?</strong> Copy any page link above and send it to the SaaSy Funnels team — we'll build it in Kajabi exactly as designed.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── File upload ────────────────────────────────────────────────────────────────
 function FileUploadArea({ onFiles, label, accept, multiple }) {
   const ref = useRef();
   const [dragging, setDragging] = useState(false);
@@ -454,463 +588,387 @@ function FileUploadArea({ onFiles, label, accept, multiple }) {
   const handleFiles = async (files) => {
     const results = [];
     for (const file of files) {
-      const base64 = await new Promise((res,rej)=>{
-        const r=new FileReader();
-        r.onload=()=>res(r.result.split(",")[1]);
-        r.onerror=()=>rej();
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(",")[1]);
+        r.onerror = () => rej();
         r.readAsDataURL(file);
       });
-      results.push({ name:file.name, type:file.type, base64 });
+      results.push({ name: file.name, type: file.type, base64 });
     }
     onFiles(results);
   };
 
   return (
     <div
-      onDragOver={e=>{e.preventDefault();setDragging(true);}}
-      onDragLeave={()=>setDragging(false)}
-      onDrop={e=>{e.preventDefault();setDragging(false);handleFiles([...e.dataTransfer.files]);}}
-      onClick={()=>ref.current?.click()}
+      onDragOver={e => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={e => { e.preventDefault(); setDragging(false); handleFiles([...e.dataTransfer.files]); }}
+      onClick={() => ref.current?.click()}
       style={{
-        border:`2px dashed ${dragging?kjPink:kjBorderAccent}`,
-        borderRadius:10,padding:"14px 16px",cursor:"pointer",textAlign:"center",
-        background:dragging?"rgba(244,84,122,0.04)":kjSubtle,
-        transition:"all 0.15s",marginBottom:8
+        border: `2px dashed ${dragging ? kjPink : kjPurple + "44"}`,
+        borderRadius: 10, padding: "14px 16px", cursor: "pointer", textAlign: "center",
+        background: dragging ? `${kjPink}08` : `${kjPurple}05`,
+        transition: "all 0.15s",
       }}
     >
-      <input ref={ref} type="file" accept={accept} multiple={multiple} style={{display:"none"}}
-        onChange={e=>handleFiles([...e.target.files])}/>
-      <div style={{fontSize:20,marginBottom:4}}>📎</div>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:kjMuted}}>{label}</div>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:kjBorderAccent,marginTop:3}}>Click or drag & drop</div>
+      <input ref={ref} type="file" accept={accept} multiple={multiple} style={{ display: "none" }}
+        onChange={e => handleFiles([...e.target.files])} />
+      <div style={{ fontSize: 20, marginBottom: 4 }}>📎</div>
+      <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: kjMuted }}>{label}</div>
+      <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: `${kjPurple}66`, marginTop: 3 }}>Click or drag & drop</div>
     </div>
   );
 }
 
-function buildHTML(data) {
-  const pages = data.pages || [];
-  const palette = data.palette || { primary:"#6B35C8", secondary:"#F4547A", accent:"#F4547A", background:"#ffffff", text:"#0A0A0A" };
-
-  const pagesHTML = pages.map((page, pi) => {
-    const PAGE_ACCENTS = ["#F4547A","#6B35C8","#16A34A","#D97706","#2563EB","#DB2777"];
-    const accent = PAGE_ACCENTS[pi % PAGE_ACCENTS.length];
-
-    const sectionsHTML = (page.sections||[]).map(s => {
-      const sc = SECTION_COLORS[s.type]||SECTION_COLORS["Footer"];
-      return `
-        <div style="background:${sc.bg};border:1px solid ${sc.border}33;border-radius:12px;padding:18px 20px;margin-bottom:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-            <span style="font-size:16px;">${sc.icon}</span>
-            <span style="font-size:10px;font-weight:700;color:${sc.border};text-transform:uppercase;letter-spacing:0.08em;font-family:'DM Sans',sans-serif;">${s.type}</span>
-            ${s.isPlaceholder?`<span style="margin-left:auto;font-size:10px;background:#FFFBEB;border:1px solid #D97706;color:#92400E;border-radius:20px;padding:2px 8px;font-family:'DM Sans',sans-serif;font-weight:600;">Placeholder copy</span>`:""}
-          </div>
-          <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:#0A0A0A;margin-bottom:6px;line-height:1.3;">${s.headline}</div>
-          ${s.subheadline?`<div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:#0A0A0A;margin-bottom:8px;line-height:1.45;opacity:0.8;">${s.subheadline}</div>`:""}
-          ${s.body?`<div style="font-family:'DM Sans',sans-serif;font-size:13px;color:#6B7280;line-height:1.65;margin-bottom:8px;">${s.body}</div>`:""}
-          ${s.cta?`<div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#F4547A,#6B35C8);color:#fff;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;margin-top:6px;">→ ${s.cta}</div>`:""}
-          ${s.imageNote?`<div style="margin-top:10px;background:#fff;border:1px dashed #DDD0F5;border-radius:8px;padding:8px 12px;font-size:12px;color:#6B35C8;font-family:'DM Sans',sans-serif;">🖼 <strong>Image needed:</strong> ${s.imageNote}</div>`:""}
-          ${s.designNote?`<div style="margin-top:6px;background:rgba(107,53,200,0.06);border:1px solid #DDD0F5;border-radius:8px;padding:7px 12px;font-size:12px;color:#6B35C8;font-family:'DM Sans',sans-serif;">💡 <strong>Design note:</strong> ${s.designNote}</div>`:""}
-        </div>`;
-    }).join('<div style="text-align:center;font-size:12px;color:#DDD0F5;margin:4px 0;">↓</div>');
-
-    return `
-      <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08);margin-bottom:28px;border:1px solid ${accent}33;">
-        <div style="background:linear-gradient(135deg,${accent}15,${accent}05);border-bottom:2px solid ${accent};padding:16px 20px;display:flex;align-items:center;gap:12px;">
-          <div style="width:36px;height:36px;border-radius:10px;background:${accent};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;font-family:'DM Sans',sans-serif;">P${page.id}</div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:${accent};text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;font-family:'DM Sans',sans-serif;">📄 ${page.pageType}</div>
-            <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:#0A0A0A;">${page.name}</div>
-            <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:#6B7280;margin-top:2px;">Goal: ${page.goal}</div>
-          </div>
-        </div>
-        <div style="padding:20px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;background:#F9FAFB;border-radius:10px;padding:10px 14px;border:1px solid #E5E7EB;">
-            <span style="font-size:14px;">🎯</span>
-            <span style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:#6B35C8;text-transform:uppercase;letter-spacing:0.07em;">Primary CTA: </span>
-            <span style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#0A0A0A;">${page.cta}</span>
-          </div>
-          ${sectionsHTML}
-          ${page.conversionNotes?`<div style="margin-top:14px;background:#FFFBEB;border:1px solid rgba(245,158,11,0.33);border-radius:10px;padding:12px 14px;"><div style="font-size:10px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;font-family:'DM Sans',sans-serif;">💡 Conversion notes</div><div style="font-family:'DM Sans',sans-serif;font-size:12px;color:#92400E;line-height:1.6;">${page.conversionNotes}</div></div>`:""}
-        </div>
-      </div>`;
-  }).join("");
-
-  const paletteSwatchHTML = data.palette ? Object.entries(data.palette).map(([k,v])=>`<span style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #E5E7EB;border-radius:6px;padding:4px 8px;margin:3px;"><span style="width:14px;height:14px;border-radius:3px;background:${v};border:1px solid rgba(0,0,0,0.1);display:inline-block;"></span><span style="font-size:10px;color:#6B7280;font-family:monospace;">${v}</span><span style="font-size:10px;color:#0A0A0A;font-family:'DM Sans',sans-serif;text-transform:capitalize;">${k}</span></span>`).join("") : "";
-
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${data.projectName} — Page Design · SaaSy Funnels</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/><style>body{font-family:'DM Sans',sans-serif;background:#F9FAFB;margin:0;padding:30px 16px;color:#0A0A0A;max-width:780px;margin:0 auto;}@media print{body{background:#fff;}}</style></head><body>
-    <div style="display:inline-block;background:linear-gradient(135deg,#F4547A,#6B35C8);color:#fff;border-radius:100px;padding:5px 18px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px;font-weight:700;">✦ SaaSy Funnels · ${data.isMultiPage?`${pages.length}-Page Funnel Design`:"Page Design"}</div>
-    <h1 style="font-family:'DM Sans',sans-serif;font-size:26px;font-weight:700;margin:4px 0 4px;color:#0A0A0A;">${data.projectName}</h1>
-    <p style="color:#6B7280;margin-bottom:8px;font-size:14px;">${data.niche} · ${data.targetAudience}</p>
-    ${paletteSwatchHTML?`<div style="margin-bottom:16px;">${paletteSwatchHTML}</div>`:""}
-    ${data.brandPaletteExplanation?`<p style="font-size:12px;color:#6B7280;font-style:italic;margin-bottom:20px;line-height:1.5;">${data.brandPaletteExplanation}</p>`:""}
-    ${data.isMultiPage&&pages.length>1?`<div style="background:#fff;border:1px solid #DDD0F5;border-radius:10px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:#6B7280;line-height:1.6;">🗺 <strong style="color:#0A0A0A;">This is a ${pages.length}-page funnel.</strong> Pages are shown below in order. Each connects to the next.</div>`:""}
-    ${pagesHTML}
-    ${data.teamBriefing?`<div style="background:#F3EEFF;border:1px solid #DDD0F5;border-radius:14px;padding:20px;margin-top:8px;"><div style="font-size:11px;font-weight:700;color:#6B35C8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">📋 Brief for the SaaSy Funnels Team</div><div style="font-family:'DM Sans',sans-serif;font-size:13px;color:#6B7280;line-height:1.7;white-space:pre-wrap;">${data.teamBriefing}</div></div>`:""}
-    ${data.overallNotes?`<div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin-top:14px;"><div style="font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Notes</div><div style="font-family:'DM Sans',sans-serif;font-size:13px;color:#6B7280;line-height:1.6;">${data.overallNotes}</div></div>`:""}
-    <p style="margin-top:40px;font-size:11px;color:#9CA3AF;text-align:center;">Generated by SaaSy Funnels · Page Builder · Powered by Claude</p>
-  </body></html>`;
-}
-
-export default function App() {
+// ─── Main component ─────────────────────────────────────────────────────────────
+export default function KajabiPageBuilder() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [started, setStarted] = useState(false);
-  const [pageData, setPageData] = useState(null);
-  const [shareUrl, setShareUrl] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [viewingShared, setViewingShared] = useState(false);
+  const [projectData, setProjectData] = useState(null);
   const [pendingFiles, setPendingFiles] = useState([]);
   const [showUploadPanel, setShowUploadPanel] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("");
+  const [pendingBranding, setPendingBranding] = useState(null);
+  const [showPalettePicker, setShowPalettePicker] = useState(false);
+
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const historyRef = useRef([]);
-  const [loadingMsg, setLoadingMsg] = useState("");
   const loadingTimerRef = useRef(null);
 
-  const KJ_LOADING_MSGS = [
-    "Reviewing what you told me...",
-    "Thinking about your Kajabi audience...",
-    "Mapping out your page structure...",
-    "Writing your sections...",
-    "Crafting the copy...",
-    "Checking conversion principles...",
-    "Adding design notes...",
-    "Putting it all together...",
-    "Almost there...",
+  const LOADING_MSGS = [
+    "Reading your brief…",
+    "Thinking about your audience…",
+    "Designing your Kajabi page…",
+    "Writing your copy…",
+    "Applying your branding…",
+    "Checking conversion principles…",
+    "Building the layout…",
+    "Almost there…",
   ];
 
   const startLoadingMsgs = () => {
     let i = 0;
-    setLoadingMsg(KJ_LOADING_MSGS[0]);
+    setLoadingMsg(LOADING_MSGS[0]);
     loadingTimerRef.current = setInterval(() => {
-      i = Math.min(i + 1, KJ_LOADING_MSGS.length - 1);
-      setLoadingMsg(KJ_LOADING_MSGS[i]);
+      i = Math.min(i + 1, LOADING_MSGS.length - 1);
+      setLoadingMsg(LOADING_MSGS[i]);
     }, 3500);
   };
+  const stopLoadingMsgs = () => { clearInterval(loadingTimerRef.current); setLoadingMsg(""); };
 
-  const stopLoadingMsgs = () => {
-    clearInterval(loadingTimerRef.current);
-    setLoadingMsg("");
-  };
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading, pendingBranding, showPalettePicker]);
+  useEffect(() => { if (started && !loading) inputRef.current?.focus(); }, [started, loading]);
 
-  useEffect(()=>{
-    const params=new URLSearchParams(window.location.search);
-    const spec=params.get("spec");
-    if(spec){const d=decodeSpec(spec);if(d){setPageData(d);setViewingShared(true);setStarted(true);}}
-  },[]);
+  const send = async (text, files = []) => {
+    if (loading) return;
 
-  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},[messages,loading]);
+    const urlPattern = /https?:\/\/[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/;
+    const looksLikeUrl = urlPattern.test(text) && (
+      text.toLowerCase().includes("http") ||
+      text.toLowerCase().includes("www.") ||
+      /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(text.trim())
+    );
 
-  const parseJSON = text => {
-    try { const m=text.match(/```json\s*([\s\S]*?)```/); if(m) return JSON.parse(m[1]); } catch(e){}
-    try { const m=text.match(/```\s*([\s\S]*?)```/); if(m) { const parsed=JSON.parse(m[1]); if(parsed.projectName) return parsed; } } catch(e){}
-    try { const m=text.match(/(\{[\s\S]*"projectName"[\s\S]*\})/); if(m) return JSON.parse(m[1]); } catch(e){}
-    try { const start=text.indexOf("{"); const end=text.lastIndexOf("}"); if(start>-1&&end>start){ const parsed=JSON.parse(text.slice(start,end+1)); if(parsed.projectName) return parsed; } } catch(e){}
-    return null;
-  };
+    const userMsg = { role: "user", content: text, files };
+    setMessages(prev => [...prev, userMsg]);
+    setInput("");
+    setPendingFiles([]);
+    setShowUploadPanel(false);
 
-  const buildMessages = (history) => {
-    return history.map(m => {
-      if (m.role === "user" && m.files?.length) {
-        const content = [];
-        for (const f of m.files) {
-          if (f.type.startsWith("image/")) {
-            content.push({ type:"image", source:{ type:"base64", media_type:f.type, data:f.base64 }});
-          } else if (f.type==="application/pdf") {
-            content.push({ type:"document", source:{ type:"base64", media_type:"application/pdf", data:f.base64 }});
-          }
+    const buildContent = (msgText, msgFiles) => {
+      if (!msgFiles?.length) return msgText;
+      const parts = [{ type: "text", text: msgText || "Here are the files I mentioned." }];
+      for (const f of msgFiles) {
+        if (f.type?.startsWith("image/")) {
+          parts.push({ type: "image", source: { type: "base64", media_type: f.type, data: f.base64 } });
+        } else if (f.type === "application/pdf") {
+          parts.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: f.base64 } });
         }
-        content.push({ type:"text", text:m.content });
-        return { role:"user", content };
       }
-      return { role:m.role, content:m.content };
-    });
-  };
+      return parts;
+    };
 
-  const fetchPageBranding = async (url) => {
+    if (looksLikeUrl && historyRef.current.length > 0) {
+      setLoading(true);
+      startLoadingMsgs();
+      try {
+        let targetUrl = text.trim();
+        if (!targetUrl.startsWith("http")) targetUrl = "https://" + targetUrl;
+        const scrapeRes = await fetch("/api/fetch-page", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: targetUrl }),
+        });
+        const scraped = await scrapeRes.json();
+        if (scraped.success && (scraped.colours?.length || scraped.fonts?.length)) {
+          setPendingBranding({
+            url: targetUrl,
+            title: scraped.title,
+            colours: scraped.colours,
+            fonts: scraped.fonts,
+            googleFonts: scraped.googleFonts,
+            vibe: scraped.colours?.length > 3 ? "Detected from your site" : "Minimal palette detected",
+            raw: scraped,
+          });
+          stopLoadingMsgs();
+          setLoading(false);
+          return;
+        }
+      } catch (e) { /* fall through */ }
+      stopLoadingMsgs();
+      setLoading(false);
+    }
+
+    setLoading(true);
+    startLoadingMsgs();
+    const newHist = [...historyRef.current, { role: "user", content: buildContent(text, files) }];
+    historyRef.current = newHist;
+
     try {
-      const res = await fetch("/api/fetch-page", {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
+        headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01", "anthropic-beta": "interleaved-thinking-2025-05-14" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5-20250929",
+          max_tokens: 16000,
+          system: BASE_SYSTEM_PROMPT,
+          messages: newHist,
+        }),
       });
       const data = await res.json();
-      if (!data.success) return null;
-      return data;
-    } catch {
-      return null;
-    }
-  };
+      const reply = data.content?.find(b => b.type === "text")?.text || "Something went wrong.";
 
-  const extractUrl = (text) => {
-    const match = text.match(/https?:\/\/[^\s]+|(?:www\.)[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/);
-    if (!match) return null;
-    const url = match[0];
-    return url.startsWith("http") ? url : "https://" + url;
-  };
-
-  const callClaude = async history => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY || "";
-    const headers = {
-      "Content-Type": "application/json",
-      "anthropic-dangerous-direct-browser-access": "true",
-      "anthropic-version": "2023-06-01",
-      "x-api-key": apiKey
-    };
-    const r = await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",
-      headers,
-      body:JSON.stringify({
-        model:"claude-sonnet-4-5-20250929",
-        max_tokens:4000,
-        system:BASE_SYSTEM_PROMPT,
-        messages:buildMessages(history)
-      })
-    });
-    const d = await r.json();
-    if (d.error) throw new Error(d.error.message);
-    const text = d.content?.filter(b=>b.type==="text").map(b=>b.text).join("")||"Something went wrong — please try again.";
-    return text;
-  };
-
-  const send = async (text, files=[]) => {
-    const userMsg = { role:"user", content:text, files };
-    let newHist = [...historyRef.current, userMsg];
-    historyRef.current = newHist;
-    setMessages(prev=>[...prev,userMsg]);
-    setLoading(true);
-    setPendingFiles([]);
-    startLoadingMsgs();
-    try {
-      const url = extractUrl(text);
-      if (url && (text.toLowerCase().includes("http") || text.toLowerCase().includes("www") || text.match(/\.[a-z]{2,}\//))) {
-        const branding = await fetchPageBranding(url);
-        if (branding && branding.success) {
-          const brandingContext = `[PAGE FETCH RESULT for ${url}]
-Title: ${branding.title || "unknown"}
-Description: ${branding.description || "none"}
-H1: ${branding.h1 || "none"}
-Google Fonts detected: ${branding.googleFonts?.join(", ") || "none detected"}
-Font families in CSS: ${branding.fonts?.slice(0,5).join(", ") || "none detected"}
-Colours found: ${branding.colours?.slice(0,12).join(", ") || "none detected"}
-Images found on page: ${branding.images?.slice(0,8).join(", ") || "none detected"}
-[Use this data to describe the site's visual aesthetic, colour palette, typography, and image style to the user. Identify dominant colours, fonts, and what types of images they use. If the user wants to reuse images from this page, reference the image URLs above. If colours or fonts are sparse, acknowledge that and ask the user to confirm or provide details manually.]`;
-          const contextMsg = { role:"user", content:brandingContext };
-          const ackMsg = { role:"assistant", content:`Got it — I've pulled the page data for ${url}. Let me analyse the branding now.` };
-          newHist = [...newHist, contextMsg, ackMsg];
-          historyRef.current = newHist;
-        }
-      }
-      const reply = await callClaude(newHist);
-      let displayReply = reply;
-      // Strip all code fences
-      displayReply = displayReply.replace(/```[\s\S]*?```/g, "").trim();
-      // Strip bare JSON blocks
-      const JSON_KEYS_KJ = ["projectName", "pageType", "isMultiPage", "sections", "palette"];
-      if (JSON_KEYS_KJ.some(k => displayReply.includes('"' + k + '"'))) {
-        const jS = displayReply.indexOf("{"); const jE = displayReply.lastIndexOf("}");
-        if (jS > -1 && jE > jS) displayReply = (displayReply.slice(0, jS) + displayReply.slice(jE + 1)).trim();
-      }
-      displayReply = displayReply.replace(/^json\s*/i, "").trim();
-      if (!displayReply || displayReply.length < 3) displayReply = "✦ Your page design is ready — see below!";
-      const aMsg = { role:"assistant", content:displayReply };
-      historyRef.current = [...newHist, {role:"assistant", content:reply}];
-      setMessages(prev=>[...prev,aMsg]);
       const parsed = parseJSON(reply);
-      if (parsed) { setPageData(parsed); setShareUrl(getShareUrl(parsed)); }
-    } catch(e) {
-      setMessages(prev=>[...prev,{role:"assistant",content:"Something went wrong — please try again."}]);
+      if (parsed?.pages?.length) {
+        setProjectData(parsed);
+        historyRef.current = [...newHist, { role: "assistant", content: reply }];
+        setMessages(prev => [...prev, { role: "assistant", content: "✦ Your page design is ready — see below!" }]);
+      } else {
+        historyRef.current = [...newHist, { role: "assistant", content: reply }];
+        setMessages(prev => [...prev, { role: "assistant", content: stripJSON(reply) }]);
+      }
+    } catch (e) {
+      setMessages(prev => [...prev, { role: "assistant", content: "Something went wrong — please try again." }]);
     }
     stopLoadingMsgs();
     setLoading(false);
     inputRef.current?.focus();
   };
 
-  const start = async text => { setStarted(true); await send(text); };
-  const reset = () => { setMessages([]);setInput("");setStarted(false);setPageData(null);setShareUrl("");setCopied(false);setViewingShared(false);setPendingFiles([]);setShowUploadPanel(false);historyRef.current=[];window.history.replaceState({},"",window.location.pathname); };
-  const downloadHTML = () => { if(!pageData)return; const blob=new Blob([buildHTML(pageData)],{type:"text/html"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=`${(pageData.projectName||"page").replace(/\s+/g,"-")}-design.html`; a.click(); URL.revokeObjectURL(url); };
-  const downloadPDF = () => { if(!pageData)return; const w=window.open("","_blank"); w.document.write(buildHTML(pageData)); w.document.close(); w.onload=()=>w.print(); };
-  const copyShareLink = () => { navigator.clipboard.writeText(shareUrl).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),3000);}); };
+  const confirmBranding = () => {
+    if (!pendingBranding) return;
+    const { colours, fonts, googleFonts, title, url } = pendingBranding;
+    const top3 = colours?.slice(0, 3).join(", ") || "not found";
+    const topFonts = [...(googleFonts || []), ...(fonts || [])].slice(0, 2).join(", ") || "not found";
+    setMessages(prev => [...prev, { role: "assistant", content: `Great — I've grabbed your branding from ${title || url}. Colours: ${top3}. Fonts: ${topFonts}. I'll use these for your page design.` }]);
+    const brandingContext = `The client's branding has been detected from ${url}. Use these exact details:\nColours found: ${colours?.slice(0, 6).join(", ")}\nGoogle Fonts found: ${googleFonts?.join(", ") || "none"}\nOther fonts found: ${fonts?.slice(0, 4).join(", ") || "none"}\nUse the most prominent colours as the palette. Pick the most distinctive Google Font as the headline font.`;
+    historyRef.current = [...historyRef.current, { role: "assistant", content: brandingContext }];
+    setPendingBranding(null);
+    setTimeout(() => send("My branding looks correct — please continue to the next question."), 100);
+  };
 
-  const KJ_JSON_DETECT = ["projectName", "pageType", "isMultiPage", "sections", "palette"];
-  const displayMsgs = messages.map(m => {
-    if (m.role !== "assistant") return m;
-    let content = m.content;
-    content = content.replace(/```[\s\S]*?```/g, "").trim();
-    if (KJ_JSON_DETECT.some(k => content.includes('"' + k + '"'))) {
-      const s = content.indexOf("{"); const e = content.lastIndexOf("}");
-      if (s > -1 && e > s) content = (content.slice(0, s) + content.slice(e + 1)).trim();
+  const tweakBranding = () => {
+    setPendingBranding(null);
+    setMessages(prev => [...prev, { role: "assistant", content: "No problem — what would you like to change? You can paste specific hex colours, font names, or describe what doesn't look right." }]);
+  };
+
+  const wrongBranding = () => {
+    setPendingBranding(null);
+    setMessages(prev => [...prev, { role: "assistant", content: "Got it — let's try a different approach. Would you like to paste your hex colours directly, upload a screenshot, or let me recommend a palette based on your vibe?" }]);
+  };
+
+  const selectPalette = (palette) => {
+    setShowPalettePicker(false);
+    const msg = `I love the ${palette.name} palette — ${palette.vibe}. Let's use that.`;
+    setMessages(prev => [...prev, { role: "user", content: msg }]);
+    const paletteContext = `The client has chosen the "${palette.name}" colour palette:\nPrimary: ${palette.primary}\nSecondary: ${palette.secondary}\nAccent: ${palette.accent}\nBackground: ${palette.background}\nText: ${palette.text}\nUse these exact hex values in the page design.`;
+    historyRef.current = [...historyRef.current, { role: "user", content: msg }];
+    historyRef.current = [...historyRef.current, { role: "assistant", content: paletteContext }];
+    setTimeout(() => send("Please continue to the next question — I've confirmed my palette choice.", []), 100);
+  };
+
+  const addAIImages = async (setProgress, onComplete) => {
+    if (!projectData?.pages) return;
+    const updatedPages = [...projectData.pages];
+    for (let pi = 0; pi < updatedPages.length; pi++) {
+      const page = updatedPages[pi];
+      const placeholderRegex = /data-label="([^"]+)"/g;
+      let match;
+      const placeholders = [];
+      while ((match = placeholderRegex.exec(page.html)) !== null) placeholders.push(match[1]);
+      for (let ii = 0; ii < placeholders.length; ii++) {
+        const label = placeholders[ii];
+        setProgress(`Page ${pi + 1} of ${updatedPages.length}: generating "${label}" (${ii + 1}/${placeholders.length})…`);
+        try {
+          const res = await fetch("/api/generate-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: label, aspect_ratio: "16:9" }),
+          });
+          const data = await res.json();
+          if (data.success && data.url) {
+            const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const placeholderDivRegex = new RegExp(`<div class="img-placeholder"[^>]*data-label="${escapedLabel}"[^>]*>[\\s\\S]*?<\\/div>`, 'i');
+            const imgTag = `<img src="${data.url}" alt="${label}" style="width:100%;border-radius:12px;display:block;" />`;
+            updatedPages[pi] = { ...page, html: page.html.replace(placeholderDivRegex, imgTag) };
+          }
+        } catch (e) { console.error("Image gen failed:", label, e); }
+      }
     }
-    content = content.replace(/^json\s*/i, "").trim();
-    if (!content || content.length < 3) content = "✦ Your page design is ready — see below!";
-    return {...m, content};
-  });
+    setProjectData(prev => ({ ...prev, pages: updatedPages }));
+    onComplete(updatedPages);
+  };
 
-  const pageCount = pageData?.pages?.length || 1;
+  const start = async (text) => { setStarted(true); await send(text); };
+  const reset = () => {
+    setMessages([]); setInput(""); setStarted(false); setProjectData(null);
+    setPendingFiles([]); setShowUploadPanel(false); setPendingBranding(null);
+    setShowPalettePicker(false); historyRef.current = [];
+  };
+
+  const displayMsgs = messages.map(m => m.role !== "assistant" ? m : { ...m, content: stripJSON(m.content) });
 
   return (
-    <div style={{minHeight:"100vh",background:kjBg,fontFamily:"'DM Sans',sans-serif",display:"flex",flexDirection:"column"}}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+    <div style={{ minHeight: "100vh", background: kjBg, fontFamily: "'DM Sans',sans-serif", display: "flex", flexDirection: "column" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
       <style>{`
         @keyframes kjBounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
         @keyframes kjFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes kjFadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes kjProgress{0%{width:0%;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%}}
         textarea:focus{outline:none} textarea{resize:none} input:focus{outline:none}
-        ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-thumb{background:${kjPurple};border-radius:2px}
-        ::-webkit-scrollbar-track{background:#F3F4F6}
-        .kj-prompt-btn:hover{border-color:${kjPink}!important;background:rgba(244,84,122,0.05)!important;}
-        .kj-prompt-btn:hover .kj-arrow{color:${kjPink}!important;}
+        ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-thumb{background:${kjPurple}44;border-radius:2px}
+        .kj-prompt-btn:hover{border-color:${kjPink}!important;background:${kjPink}08!important;}
       `}</style>
 
-      <TopNav onBack={() => navigate("/")}/>
+      <TopNav onBack={() => navigate("/")} />
 
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 16px 0"}}>
-        {/* Header */}
-        <div style={{textAlign:"center",marginBottom:30,animation:"kjFadeIn 0.6s ease"}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(244,84,122,0.08)",border:"1px solid rgba(244,84,122,0.2)",color:kjPink,padding:"6px 16px",borderRadius:100,fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:14,fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>
-            <span>🎨</span> Page Builder
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "32px 16px 0" }}>
+        <div style={{ textAlign: "center", marginBottom: 30, animation: "kjFadeIn 0.6s ease" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `${kjPurple}10`, border: `1px solid ${kjPurple}25`, color: kjPurple, padding: "6px 16px", borderRadius: 100, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14, fontWeight: 700, fontFamily: "'DM Sans',sans-serif" }}>
+            <span>🎨</span> Kajabi Page Builder
           </div>
-          <h1 style={{fontFamily:"'DM Sans',sans-serif",fontSize:30,fontWeight:700,color:kjText,margin:"0 0 8px",lineHeight:1.15}}>
-            {viewingShared?`Shared: ${pageData?.projectName}`:"Design your page or funnel"}
+          <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 30, fontWeight: 700, color: kjText, margin: "0 0 8px", lineHeight: 1.15 }}>
+            Design your Kajabi page
           </h1>
-          <p style={{color:kjMuted,fontSize:15,margin:0,maxWidth:440,fontFamily:"'DM Sans',sans-serif"}}>
-            {viewingShared?"Your client shared this page design for the SaaSy Funnels team to build.":"Answer a few quick questions — I'll design the full thing, ready to hand off."}
+          <p style={{ color: kjMuted, fontSize: 15, margin: 0, maxWidth: 440, fontFamily: "'DM Sans',sans-serif" }}>
+            Answer a few quick questions — I'll design the full page, ready to view, share, and hand off.
           </p>
         </div>
 
-        {/* Main card */}
         <div style={{
-          width:"100%",maxWidth:700,
-          background:"#fff",
-          border:"1px solid "+kjBorder,
-          borderRadius:16,overflow:"hidden",
-          display:"flex",flexDirection:"column",
-          height:started?"calc(100vh - 240px)":"auto",
-          minHeight:started?400:"auto",
-          animation:"kjFadeIn 0.5s ease",
-          boxShadow:"0 4px 24px rgba(0,0,0,0.07)"
+          width: "100%", maxWidth: 700,
+          background: kjSurface,
+          border: "1px solid " + kjBorder,
+          borderRadius: 16, overflow: "hidden",
+          display: "flex", flexDirection: "column",
+          height: started ? "calc(100vh - 240px)" : "auto",
+          minHeight: started ? 400 : "auto",
+          animation: "kjFadeIn 0.5s ease",
+          boxShadow: "0 4px 24px rgba(107,53,200,0.08)",
         }}>
-          {viewingShared&&pageData?(
-            <>
-              <div style={{flex:1,overflowY:"auto"}}><PageDesign data={pageData}/></div>
-              <div style={{padding:"12px 16px 16px",borderTop:"1px solid "+kjBorder,display:"flex",gap:8,flexWrap:"wrap",background:"#fff"}}>
-                <button onClick={downloadHTML} style={{...btn(),flex:1,minWidth:130,background:purpleGrad,boxShadow:"0 4px 12px rgba(107,53,200,0.2)"}}>↓ Download HTML</button>
-                <button onClick={downloadPDF}  style={{...btn(),flex:1,minWidth:130,background:pinkGrad,boxShadow:"0 4px 12px rgba(244,84,122,0.2)"}}>↓ Download / Print PDF</button>
-                <button onClick={reset} style={{...btn(),background:"#fff",color:kjText,border:"1px solid "+kjBorder,boxShadow:"none"}}>Start New</button>
-              </div>
-            </>
-          ):!started?(
-            <div style={{padding:"32px 28px 28px"}}>
-              <p style={{color:kjMuted,fontSize:14.5,marginTop:0,marginBottom:20,lineHeight:1.6}}>What do you want to design? Pick a common type or describe it yourself:</p>
-              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
-                {PROMPTS.map((p,i)=>(
-                  <button key={i} onClick={()=>start(p)} className="kj-prompt-btn" style={{
-                    background:"#fff",border:"1px solid "+kjBorder,
-                    borderRadius:10,padding:"12px 16px",textAlign:"left",cursor:"pointer",
-                    fontSize:14,color:kjText,fontFamily:"'DM Sans',sans-serif",
-                    lineHeight:1.4,display:"flex",alignItems:"center",gap:10,transition:"all 0.15s"
+
+          {!started ? (
+            <div style={{ padding: "32px 28px 28px" }}>
+              <p style={{ color: kjMuted, fontSize: 14.5, marginTop: 0, marginBottom: 20, lineHeight: 1.6, fontFamily: "'DM Sans',sans-serif" }}>
+                What do you want to design for Kajabi? Pick a type or describe it:
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                {PROMPTS.map((p, i) => (
+                  <button key={i} onClick={() => start(p)} className="kj-prompt-btn" style={{
+                    background: "#F9F9F9", border: "1px solid " + kjBorder,
+                    borderRadius: 10, padding: "12px 16px", textAlign: "left", cursor: "pointer",
+                    fontSize: 14, color: kjText, fontFamily: "'DM Sans',sans-serif",
+                    lineHeight: 1.4, display: "flex", alignItems: "center", gap: 10, transition: "all 0.15s",
                   }}>
-                    <span className="kj-arrow" style={{color:kjPurple,fontSize:15,transition:"color 0.15s"}}>→</span> {p}
+                    <span style={{ color: kjPurple, fontSize: 15 }}>→</span> {p}
                   </button>
                 ))}
               </div>
-              <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
-                <textarea ref={inputRef} value={input} onChange={e=>setInput(e.target.value)}
-                  onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(input.trim())start(input.trim());}}}
-                  placeholder="Or describe what you want to design..." rows={2}
-                  style={{flex:1,border:"1px solid "+kjBorder,borderRadius:10,padding:"12px 14px",fontSize:14,fontFamily:"'DM Sans',sans-serif",background:"#fff",color:kjText,lineHeight:1.5}}/>
-                <button onClick={()=>input.trim()&&start(input.trim())} style={{...btn(),background:sfGradient,padding:"12px 18px",fontSize:18,boxShadow:"0 4px 12px rgba(244,84,122,0.2)"}}>→</button>
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (input.trim()) start(input.trim()); } }}
+                  placeholder="Or describe what you want to design…" rows={2}
+                  style={{ flex: 1, border: "1px solid " + kjBorder, borderRadius: 10, padding: "12px 14px", fontSize: 14, fontFamily: "'DM Sans',sans-serif", background: "#F9F9F9", color: kjText, lineHeight: 1.5 }} />
+                <button onClick={() => input.trim() && start(input.trim())} style={{ ...btn(), background: sfGradient, padding: "12px 18px", fontSize: 18, boxShadow: "0 4px 12px rgba(244,84,122,0.25)" }}>→</button>
               </div>
             </div>
-          ):(
+
+          ) : projectData ? (
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              <PageOutput projectData={projectData} onAddImages={addAIImages} />
+            </div>
+
+          ) : (
             <>
-              <div style={{flex:1,overflowY:"auto",padding:"24px 20px 12px"}}>
-                {displayMsgs.map((m,i)=>(
+              <div style={{ flex: 1, overflowY: "auto", padding: "24px 20px 12px" }}>
+                {displayMsgs.map((m, i) => (
                   <div key={i}>
-                    <Bubble msg={m}/>
-                    {m.role==="assistant" && i===displayMsgs.length-1 && !loading && !pageData && (
-                      <QuickChips text={m.content} onSelect={t=>{setInput("");send(t,[]);}}/>
+                    <Bubble msg={m} />
+                    {m.role === "assistant" && i === displayMsgs.length - 1 && !loading && !pendingBranding && !showPalettePicker && (
+                      <QuickChips text={messages[i]?.content || ""} onSelect={t => send(t, [])} />
                     )}
-                    {m.files?.length>0&&(
-                      <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10,justifyContent:"flex-end"}}>
-                        {m.files.map((f,fi)=>(
-                          <div key={fi} style={{background:kjSubtle,border:"1px solid "+kjBorder,borderRadius:6,padding:"3px 10px",fontSize:11,color:kjMuted,fontFamily:"'DM Sans',sans-serif"}}>
-                            📎 {f.name}
-                          </div>
+                    {m.files?.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10, justifyContent: "flex-end" }}>
+                        {m.files.map((f, fi) => (
+                          <div key={fi} style={{ background: `${kjPurple}10`, border: `1px solid ${kjPurple}30`, borderRadius: 6, padding: "3px 10px", fontSize: 11, color: kjPurple, fontFamily: "'DM Sans',sans-serif" }}>📎 {f.name}</div>
                         ))}
                       </div>
                     )}
                   </div>
                 ))}
-                {loading&&(
-                  <div style={{display:"flex",marginBottom:12}}>
-                    <div style={{width:34,height:34,borderRadius:"50%",background:sfGradient,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,marginRight:10,flexShrink:0,color:"#fff",fontWeight:700}}>✦</div>
-                    <Dots msg={loadingMsg}/>
+
+                {loading && (
+                  <div style={{ display: "flex", marginBottom: 12 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: "50%", background: sfGradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, marginRight: 10, flexShrink: 0, color: "#fff", fontWeight: 700 }}>✦</div>
+                    <Dots msg={loadingMsg} />
                   </div>
                 )}
-                {pageData&&(
-                  <div style={{animation:"kjFadeUp 0.4s ease",marginTop:8,background:kjSubtle,border:"1px solid "+kjBorderAccent,borderRadius:14,overflow:"hidden"}}>
-                    <PageDesign data={pageData}/>
-                  </div>
+
+                {pendingBranding && !loading && (
+                  <BrandingCard branding={pendingBranding} onConfirm={confirmBranding} onTweak={tweakBranding} onWrong={wrongBranding} />
                 )}
-                <div ref={bottomRef}/>
+
+                {showPalettePicker && !loading && (
+                  <PalettePicker onSelect={selectPalette} />
+                )}
+
+                <div ref={bottomRef} />
               </div>
 
-              {pageData&&(
-                <>
-                  <div style={{padding:"12px 16px 8px",borderTop:"1px solid "+kjBorder,display:"flex",gap:8,flexWrap:"wrap",background:"#fff"}}>
-                    <button onClick={downloadHTML} style={{...btn(),flex:1,minWidth:130,background:purpleGrad,boxShadow:"0 4px 12px rgba(107,53,200,0.2)"}}>↓ Download HTML</button>
-                    <button onClick={downloadPDF}  style={{...btn(),flex:1,minWidth:130,background:pinkGrad,boxShadow:"0 4px 12px rgba(244,84,122,0.2)"}}>↓ Download / Print PDF</button>
-                    <button onClick={reset} style={{...btn(),background:"#fff",color:kjText,border:"1px solid "+kjBorder,boxShadow:"none"}}>Start Over</button>
-                  </div>
-                  <div style={{padding:"0 16px 16px",background:"#fff"}}>
-                    <div style={{background:kjSubtle,border:"1px solid "+kjBorderAccent,borderRadius:12,padding:"14px 16px"}}>
-                      <div style={{fontSize:12,fontWeight:700,color:kjPurple,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8,fontFamily:"'DM Sans',sans-serif"}}>
-                        📋 Want us to build {pageCount>1?`this ${pageCount}-page funnel`:"this page"} for you?
-                      </div>
-                      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:kjMuted,margin:"0 0 10px",lineHeight:1.5}}>Copy the link below and send it to the SaaSy Funnels team — we'll build {pageCount>1?"the full funnel":"your page"} and have it ready to go.</p>
-                      <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                        <div style={{flex:1,background:"#fff",border:"1px solid "+kjBorderAccent,borderRadius:8,padding:"9px 12px",fontSize:12,color:kjMuted,fontFamily:"monospace",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{shareUrl}</div>
-                        <button onClick={copyShareLink} style={{...btn(),background:copied?"linear-gradient(135deg,#16A34A,#15803D)":sfGradient,whiteSpace:"nowrap",padding:"9px 16px",transition:"background 0.3s",boxShadow:"0 4px 12px rgba(107,53,200,0.2)"}}>{copied?"✓ Copied!":"Copy Link"}</button>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {!pageData&&(
-                <div style={{padding:"8px 16px 12px",borderTop:"1px solid "+kjBorder,background:"#fff"}}>
-                  {showUploadPanel&&(
-                    <div style={{marginBottom:10,background:kjSubtle,border:"1px solid "+kjBorderAccent,borderRadius:12,padding:"14px 16px"}}>
-                      <div style={{fontSize:12,fontWeight:700,color:kjPurple,marginBottom:10,fontFamily:"'DM Sans',sans-serif"}}>Attach files to your message</div>
-                      <FileUploadArea
-                        label="Upload images, screenshots, or style guide PDFs"
-                        accept="image/*,application/pdf"
-                        multiple={true}
-                        onFiles={files=>{setPendingFiles(prev=>[...prev,...files]);setShowUploadPanel(false);}}
-                      />
+              {!projectData && (
+                <div style={{ padding: "8px 16px 12px", borderTop: "1px solid " + kjBorder, background: kjSurface }}>
+                  {showUploadPanel && (
+                    <div style={{ marginBottom: 10, background: `${kjPurple}08`, border: `1px solid ${kjPurple}20`, borderRadius: 12, padding: "14px 16px" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: kjPurple, marginBottom: 10, fontFamily: "'DM Sans',sans-serif" }}>Attach files</div>
+                      <FileUploadArea label="Upload images, screenshots, or style guide PDFs" accept="image/*,application/pdf" multiple={true}
+                        onFiles={files => { setPendingFiles(prev => [...prev, ...files]); setShowUploadPanel(false); }} />
                     </div>
                   )}
-                  {pendingFiles.length>0&&(
-                    <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
-                      {pendingFiles.map((f,i)=>(
-                        <div key={i} style={{background:kjSubtle,border:"1px solid "+kjBorderAccent,borderRadius:6,padding:"3px 10px",fontSize:11,color:kjPurple,fontFamily:"'DM Sans',sans-serif",display:"flex",alignItems:"center",gap:6}}>
+                  {pendingFiles.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
+                      {pendingFiles.map((f, i) => (
+                        <div key={i} style={{ background: `${kjPurple}10`, border: `1px solid ${kjPurple}30`, borderRadius: 6, padding: "3px 10px", fontSize: 11, color: kjPurple, fontFamily: "'DM Sans',sans-serif", display: "flex", alignItems: "center", gap: 6 }}>
                           📎 {f.name}
-                          <button onClick={()=>setPendingFiles(prev=>prev.filter((_,pi)=>pi!==i))} style={{border:"none",background:"none",cursor:"pointer",color:kjMuted,fontSize:12,padding:0,lineHeight:1}}>×</button>
+                          <button onClick={() => setPendingFiles(prev => prev.filter((_, pi) => pi !== i))} style={{ border: "none", background: "none", cursor: "pointer", color: kjMuted, fontSize: 12, padding: 0 }}>×</button>
                         </div>
                       ))}
                     </div>
                   )}
-                  <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
-                    <button onClick={()=>setShowUploadPanel(p=>!p)} style={{...btn(),background:"#fff",color:kjMuted,border:"1px solid "+kjBorder,padding:"11px 14px",fontSize:16,boxShadow:"none",flexShrink:0}} title="Attach files">📎</button>
-                    <textarea ref={inputRef} value={input} onChange={e=>setInput(e.target.value)}
-                      onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(!input.trim()&&!pendingFiles.length||loading)return;const t=input.trim();setInput("");send(t,pendingFiles);}}}
-                      placeholder="Type your answer..." rows={2} disabled={loading}
-                      style={{flex:1,border:"1px solid "+kjBorder,borderRadius:10,padding:"11px 14px",fontSize:14,fontFamily:"'DM Sans',sans-serif",background:"#fff",color:kjText,lineHeight:1.5,opacity:loading?0.5:1}}/>
-                    <button onClick={()=>{if((!input.trim()&&!pendingFiles.length)||loading)return;const t=input.trim();setInput("");send(t,pendingFiles);}} disabled={loading||(!input.trim()&&!pendingFiles.length)}
-                      style={{...btn(),background:loading||(!input.trim()&&!pendingFiles.length)?"#DDD0F5":sfGradient,padding:"12px 18px",fontSize:18,cursor:loading||(!input.trim()&&!pendingFiles.length)?"not-allowed":"pointer",boxShadow:loading||(!input.trim()&&!pendingFiles.length)?"none":"0 4px 12px rgba(244,84,122,0.2)"}}>→</button>
+                  <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                    <button onClick={() => setShowUploadPanel(p => !p)} style={{ ...btn(), background: "transparent", color: kjMuted, border: "1px solid " + kjBorder, padding: "11px 14px", fontSize: 16, flexShrink: 0 }}>📎</button>
+                    <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!input.trim() && !pendingFiles.length || loading) return; send(input.trim(), pendingFiles); } }}
+                      placeholder="Type your answer…" rows={2} disabled={loading}
+                      style={{ flex: 1, border: "1px solid " + kjBorder, borderRadius: 10, padding: "11px 14px", fontSize: 14, fontFamily: "'DM Sans',sans-serif", background: "#F9F9F9", color: kjText, lineHeight: 1.5, opacity: loading ? 0.5 : 1 }} />
+                    <button onClick={() => { if ((!input.trim() && !pendingFiles.length) || loading) return; send(input.trim(), pendingFiles); }}
+                      disabled={loading || (!input.trim() && !pendingFiles.length)}
+                      style={{ ...btn(), background: loading || (!input.trim() && !pendingFiles.length) ? `${kjPurple}44` : sfGradient, padding: "12px 18px", fontSize: 18, cursor: loading || (!input.trim() && !pendingFiles.length) ? "not-allowed" : "pointer" }}>→</button>
                   </div>
                 </div>
               )}
@@ -918,8 +976,14 @@ Images found on page: ${branding.images?.slice(0,8).join(", ") || "none detected
           )}
         </div>
 
-        <p style={{fontSize:11.5,color:"#9CA3AF",marginTop:14,marginBottom:20,textAlign:"center",fontFamily:"'DM Sans',sans-serif"}}>
-          Powered by Claude · Built for online business owners · SaaSy Funnels
+        {started && (
+          <button onClick={reset} style={{ ...btn(), background: "transparent", color: kjMuted, border: "1px solid " + kjBorder, marginTop: 12, marginBottom: 20, fontSize: 12 }}>
+            ← Start over
+          </button>
+        )}
+
+        <p style={{ fontSize: 11.5, color: `${kjPurple}44`, marginTop: 8, marginBottom: 20, textAlign: "center", fontFamily: "'DM Sans',sans-serif" }}>
+          Powered by Claude · Built for Kajabi users · SaaSy Funnels
         </p>
       </div>
     </div>
