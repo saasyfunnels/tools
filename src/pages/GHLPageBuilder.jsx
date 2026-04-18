@@ -55,14 +55,14 @@ FUNNEL FLOW KNOWLEDGE:
 - Discovery call funnel: Application → Thank you → Booking confirmation
 - Challenge funnel: Registration → Confirmation → Daily challenge pages → Sales page
 
-CONVERSATION RULES — non-negotiable:
-- Ask ONE question at a time. Never combine two questions in one message.
+CONVERSATION RULES — STRICT, NO EXCEPTIONS:
+- ONE QUESTION PER MESSAGE, ALWAYS. Before sending any reply, count your questions. If you have more than one, delete all but the first. Wait for the client to answer before asking the next. This is a hard constraint with zero exceptions.
 - Acknowledgements must be five words or fewer — no extended praise, no emojis, no cheerleading.
 - Where questions have clear options, list them as labelled choices (a, b, c).
 - COPY and IMAGES are always asked as SEPARATE questions — never combined.
 - Never say things like "I love working with this audience" or "Perfect choice!" — be warm but extremely brief.
 
-INTAKE PROCESS — one at a time, strictly in order:
+INTAKE PROCESS — one question at a time, strictly in order. Ask each, wait for answer, then continue:
 1. What is the page for? Give examples: opt-in page, sales page, webinar registration, VSL, discovery call, waitlist.
 2. Single page or multi-page funnel? If multi-page, plan all pages upfront before designing.
 3. Who is this page for — niche, who they are, what they struggle with, what outcome they want.
@@ -521,22 +521,10 @@ function PageOutput({ projectData, onAddImages }) {
     pages.forEach(page => savePage(page));
   }, []);
 
-  const openPage = async (page) => {
-    // Open window immediately (synchronously) to avoid popup blocker
-    const win = window.open("about:blank", "_blank");
-    if (pageUrls[page.id]) {
-      win.location.href = pageUrls[page.id];
-      return;
-    }
-    // Try blob save
-    const url = await savePage(page);
-    if (url) {
-      win.location.href = url;
-      return;
-    }
-    // Fallback: write HTML directly into the new window
-    win.document.write(page.html);
-    win.document.close();
+  const openPage = (page) => {
+    const blob = new Blob([page.html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
   };
 
   const copyLink = async (page, idx) => {
@@ -843,7 +831,7 @@ export default function GHLPageBuilder() {
         headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true", "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY || "" },
         body: JSON.stringify({
           model: "claude-sonnet-4-5-20250929",
-          max_tokens: 8000,
+          max_tokens: 16000,
           system: BASE_SYSTEM_PROMPT,
           messages: newHist,
         }),
