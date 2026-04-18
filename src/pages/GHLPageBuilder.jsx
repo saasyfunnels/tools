@@ -1049,8 +1049,8 @@ Use these exact hex values in the page design.`;
           border: "1px solid " + ghlBorder,
           borderRadius: 16, overflow: "hidden",
           display: "flex", flexDirection: "column",
-          height: started ? "calc(100vh - 240px)" : "auto",
-          minHeight: started ? 400 : "auto",
+          height: (started && !projectData) ? "calc(100vh - 240px)" : "auto",
+          minHeight: (started && !projectData) ? 400 : "auto",
           animation: "ghlFadeIn 0.5s ease",
           boxShadow: "0 8px 40px rgba(107,53,200,0.15)",
         }}>
@@ -1096,7 +1096,7 @@ Use these exact hex values in the page design.`;
                     {displayMsgs.slice(-3).map((m, i) => m.role === "assistant" ? null : null)}
                     <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
                       <textarea value={input} onChange={e => setInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (input.trim() && !loading) { const t = input.trim(); setInput(""); send(t, []); } } }}
+                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (input.trim() && !loading) { const t = input.trim(); setInput(""); setProjectData(null); send(t, []); } } }}
                         placeholder="e.g. Make the hero darker, add more testimonials, change the font…" rows={2}
                         style={{ flex: 1, border: "1px solid " + ghlBorder, borderRadius: 10, padding: "11px 14px", fontSize: 13, fontFamily: "'DM Sans',sans-serif", background: "rgba(255,255,255,0.04)", color: ghlText, lineHeight: 1.5, opacity: loading ? 0.5 : 1 }} />
                       <button onClick={() => { if (!input.trim() || loading) return; const t = input.trim(); setInput(""); setProjectData(null); send(t, []); }}
