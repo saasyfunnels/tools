@@ -780,7 +780,7 @@ export default function KajabiPageBuilder() {
         headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true", "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY || "" },
         body: JSON.stringify({
           model: "claude-sonnet-4-5-20250929",
-          max_tokens: 16000,
+          max_tokens: 8000,
           system: BASE_SYSTEM_PROMPT,
           messages: newHist,
         }),
