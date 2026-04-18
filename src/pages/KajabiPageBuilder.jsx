@@ -167,38 +167,65 @@ HTML GENERATION RULES — follow these precisely:
   <div style="font-size:13px;font-weight:600;opacity:0.7;">IMAGE: Description of image needed</div>
 </div>
 
-5. KAJABI-APPROPRIATE SECTIONS: Design pages that would translate naturally to Kajabi's section-based builder. Use:
+5. COPY — MANDATORY, NON-NEGOTIABLE: Every section MUST contain real, fully written copy. No empty cards. No icon-only sections. No skeleton layouts. Write everything as if this page is going live today. If the user provided copy, use it exactly. If not, write specific niche-appropriate copy in full. The ONLY brackets permitted are [CLIENT NAME] and [BUSINESS NAME] where the actual name is unknown — no other placeholder brackets anywhere.
+
+6. HERO SECTION — ALL of these elements are required, every time:
+- H1 headline: outcome-focused, specific, and compelling — never generic filler
+- Subheadline: 1–2 sentences expanding the promise
+- 2–3 bullet points stating what the visitor will learn, get, or achieve (written in full)
+- CTA button with real action text matching the goal (e.g. "Save My Seat", "Get Instant Access", "Apply Now") — never "Click Here" or "Submit"
+- Image placeholder for a hero image (lifestyle, speaker, or product shot)
+
+7. BENEFITS / FEATURES SECTION — ALL of these elements are required, every time:
+- Section headline (e.g. "Here's What You'll Learn" or "Everything Included")
+- Minimum 3 cards or items — each card MUST contain: an icon or emoji, a bold title (3–6 words), AND 2 full sentences of body copy written in niche-specific language
+- No card may contain only an icon or only a title — body copy is mandatory on every single card
+
+8. TESTIMONIALS SECTION — ALL of these elements are required, every time:
+- Minimum 2–3 full testimonial quotes written out completely — specific results, conversational tone, niche-appropriate language
+- A name and descriptor for each (e.g. "Sarah M., Health Coach" or "James T., Course Creator")
+- Star rating displayed visually (★★★★★) on each testimonial
+- Small avatar image placeholder per testimonial
+
+9. ABOUT / HOST SECTION — ALL of these elements are required, every time:
+- Headline introducing the host (e.g. "Meet Your Host" or "Hi, I'm [Name]")
+- 2–3 paragraphs of bio copy: who they are, their credentials, their results, and why they are uniquely qualified to help
+- Image placeholder for headshot or personal brand photo
+
+10. CTA SECTIONS: Every standalone call-to-action section must include a headline creating urgency or desire, 1–2 sentences of supporting copy, and a button with specific action text — never generic filler.
+
+11. COLOURS — STRICT RULES:
+- ALL buttons must use palette primary colour as background — never blue, green, or any off-palette colour
+- ALL links and accents must use palette colours only
+- No random white circles, grey boxes, or decorative shapes in unspecified colours
+- Section backgrounds use palette.background and palette.secondary only
+
+12. CTA BUTTONS: palette.primary background, border-radius:40px, padding:16px 40px, font-weight:700, color:#fff.
+
+13. KAJABI-APPROPRIATE SECTIONS: Design pages that translate naturally to Kajabi's section-based builder. Kajabi pages are cleaner and lighter than GHL — lean into that. Use:
 - Clean hero sections with strong headline + subheadline + CTA
-- Benefit grids (2-3 columns on desktop, stacked on mobile)
+- Benefit grids (2–3 columns on desktop, stacked on mobile)
 - Testimonial sections (card style or pull-quote style)
 - About/credibility section with image placeholder
 - FAQ accordions (visual, not functional — show first item open)
 - Clear CTA sections with high contrast
+- Bold stat/number blocks (e.g. "500+ students transformed", "10 years experience")
 - Simple, clean footer
-Kajabi pages tend to be cleaner and lighter than GHL pages — lean into this.
 
-6. IMAGES — MANDATORY: Every page MUST have at least 3-4 image placeholders spread throughout. Place them:
+14. IMAGES — MANDATORY: Every page MUST have at least 3–4 image placeholders spread throughout:
 - Hero section: full-width or split-layout hero image
 - About/host section: headshot or personal brand photo
 - Mid-page: supporting lifestyle or result image
 - Testimonials: small avatar placeholder per testimonial
 Use the img-placeholder div format for ALL of these. Label them descriptively.
 
-7. COLOURS — STRICT RULES:
-- ALL buttons must use palette primary colour as background — never blue, green, or any off-palette colour
-- ALL links and accents must use palette colours only
-- No random white circles, grey boxes, or decorative shapes in unspecified colours
-- Section backgrounds use palette.background and palette.secondary only
+15. MOBILE: Include a <style> block with @media (max-width: 768px) rules. Columns stack, font sizes reduce, padding tightens.
 
-8. MOBILE: Include a <style> block with @media (max-width: 768px) rules. Columns stack, font sizes reduce, padding tightens.
+16. FOOTER: Minimal footer: SaaSy Funnels watermark, muted colour, centered.
 
-9. CTA BUTTONS: palette.primary background, border-radius:40px, padding:16px 40px, font-weight:700, color:#fff.
+17. MULTI-PAGE: Each page is a complete standalone HTML document with the same palette and fonts.
 
-10. COPY: If the user has copy, use it exactly. If placeholder, write specific niche-appropriate copy with <!-- PLACEHOLDER --> comments. Never write generic "Lorem ipsum".
-
-11. FOOTER: Minimal footer: SaaSy Funnels watermark, muted colour, centered.
-
-12. MULTI-PAGE: Each page is a complete standalone HTML document with the same palette and fonts.`;
+FINAL QUALITY CHECK — before outputting the JSON, review your HTML and confirm: Does every section have a real headline and body copy? Does every card have a title AND 2 sentences of body copy? Does every button have specific action text? Does this page look like a real professional marketing page that could go live today? If the answer to any of these is no, fix it before outputting.`;
 
 const PROMPTS = [
   "Design a Kajabi opt-in page for my lead magnet",
