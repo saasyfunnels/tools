@@ -59,24 +59,31 @@ FUNNEL FLOW KNOWLEDGE:
 - Discovery Call Pipeline: Application → Thank you → Booking confirmation
 
 CONVERSATION RULES — non-negotiable:
-- Ask ONE question at a time. Never combine two questions.
-- Keep acknowledgements to ONE sentence maximum before the next question.
+- Ask ONE question at a time. Never combine two questions in one message.
+- Acknowledgements must be five words or fewer — no extended praise, no emojis, no cheerleading.
 - Where questions have clear options, list them as labelled choices (a, b, c).
 - COPY and IMAGES are always asked as SEPARATE questions — never combined.
+- Never say things like "I love working with this audience" or "Perfect choice!" — be warm but extremely brief.
 
 INTAKE PROCESS — one at a time, in order:
 1. What is the page for? Give examples: opt-in page, sales page, webinar registration, thank you page, VSL, discovery call, waitlist.
 2. Single page or multi-page pipeline? If multi-page, plan all pages upfront before designing.
 3. Who is this page for — niche, who lands on it, what they struggle with, what outcome they want.
-4. What is the ONE goal — what should the visitor do? One CTA only.
-5. Brand voice — pick one: a) Warm and nurturing, b) Bold and direct, c) Fun and irreverent, d) Professional and polished, e) Empowering and confident.
+4. What is the ONE goal of this page — what should the visitor do?
+5. For opt-in/registration pages only: What information do you want to collect from registrants?
+   a) Name + email only
+   b) Name + email + phone
+   c) Something else — tell me what
+   Skip this question for sales pages, VSL pages, and thank you pages.
+6. Brand voice — pick one: a) Warm and nurturing, b) Bold and direct, c) Fun and irreverent, d) Professional and polished, e) Empowering and confident.
 
 BRANDING INTAKE — one question, let them pick:
-a) I'll upload a screenshot of my existing Kajabi site
-b) I'll upload my style guide PDF
-c) I'll paste my hex colours and font names
-d) Share a URL — you'll pull colours and fonts from it
-e) No branding yet — ask me vibe questions and recommend a palette
+a) Upload a screenshot of my site or style guide (they can attach a file using the 📎 button)
+b) Paste my hex colours and font names
+c) Share a URL — you'll try to pull colours from it (note: may not work for all sites)
+d) No branding yet — ask me vibe questions and recommend a palette
+
+IMPORTANT: When the user says "screenshot" or "upload", remind them to use the 📎 attachment button in the chat to attach their image — do NOT ask them for a URL instead.
 
 VIBE QUESTIONS (only if option e) — ask one at a time:
 - Pick 3 words that describe your brand vibe (bold, warm, playful, luxe, minimal, earthy, clinical, feminine, edgy, etc.)
@@ -422,13 +429,20 @@ function PageOutput({ projectData, onAddImages }) {
   const pages = projectData.pages || [];
   const [pageUrls, setPageUrls] = useState({});
   const [saving, setSaving] = useState({});
+  const [saveErrors, setSaveErrors] = useState({});
   const [generatingImages, setGeneratingImages] = useState(false);
   const [imageProgress, setImageProgress] = useState("");
   const [copiedIdx, setCopiedIdx] = useState(null);
 
+  const getLocalUrl = (page) => {
+    const blob = new Blob([page.html], { type: "text/html" });
+    return URL.createObjectURL(blob);
+  };
+
   const savePage = async (page) => {
     if (pageUrls[page.id]) return pageUrls[page.id];
     setSaving(prev => ({ ...prev, [page.id]: true }));
+    setSaveErrors(prev => ({ ...prev, [page.id]: null }));
     try {
       const slug = `${projectData.projectName || "page"}-${page.slug || page.name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
       const res = await fetch("/api/save-page", {
@@ -437,12 +451,16 @@ function PageOutput({ projectData, onAddImages }) {
         body: JSON.stringify({ html: page.html, filename: slug }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.url) {
         setPageUrls(prev => ({ ...prev, [page.id]: data.url }));
+        setSaveErrors(prev => ({ ...prev, [page.id]: null }));
         return data.url;
+      } else {
+        throw new Error(data.error || "Save failed");
       }
     } catch (e) {
       console.error("Save failed:", e);
+      setSaveErrors(prev => ({ ...prev, [page.id]: e.message }));
     } finally {
       setSaving(prev => ({ ...prev, [page.id]: false }));
     }
@@ -452,8 +470,10 @@ function PageOutput({ projectData, onAddImages }) {
   useEffect(() => { pages.forEach(page => savePage(page)); }, []);
 
   const openPage = async (page) => {
-    const url = pageUrls[page.id] || await savePage(page);
-    if (url) window.open(url, "_blank");
+    if (pageUrls[page.id]) { window.open(pageUrls[page.id], "_blank"); return; }
+    const url = await savePage(page);
+    if (url) { window.open(url, "_blank"); return; }
+    window.open(getLocalUrl(page), "_blank");
   };
 
   const copyLink = async (page, idx) => {
@@ -463,6 +483,8 @@ function PageOutput({ projectData, onAddImages }) {
         setCopiedIdx(idx);
         setTimeout(() => setCopiedIdx(null), 3000);
       });
+    } else {
+      navigator.clipboard.writeText("Use the ↓ download button to save this page.");
     }
   };
 
@@ -524,6 +546,7 @@ function PageOutput({ projectData, onAddImages }) {
                 <div style={{ fontSize: 14, fontWeight: 700, color: kjText, fontFamily: "'Playfair Display',serif" }}>{page.name}</div>
               </div>
               {saving[page.id] && <div style={{ fontSize: 11, color: kjMuted, fontFamily: "'DM Sans',sans-serif" }}>Saving…</div>}
+              {saveErrors[page.id] && !saving[page.id] && <div style={{ fontSize: 10, color: "#E53E3E", fontFamily: "'DM Sans',sans-serif" }}>Link unavailable — use ↓ to download</div>}
             </div>
 
             <div style={{ padding: "12px 14px", display: "flex", gap: 7, flexWrap: "wrap" }}>
