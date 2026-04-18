@@ -164,59 +164,71 @@ HTML GENERATION RULES — follow these precisely:
   <div style="font-size:13px;font-weight:600;opacity:0.7;">IMAGE: Description of image needed</div>
 </div>
 
-5. COPY — MANDATORY, NON-NEGOTIABLE: Every section MUST contain real, fully written copy. No empty cards. No icon-only sections. No skeleton layouts. Write everything as if this page is going live today. If the user provided copy, use it exactly. If not, write specific niche-appropriate copy in full. The ONLY brackets permitted are [CLIENT NAME] and [BUSINESS NAME] where the actual name is unknown — no other placeholder brackets anywhere.
+DESIGN PHILOSOPHY: Every page must feel alive, warm, and human. These are pages for coaches — they need personality, energy, and emotional resonance. A visitor should feel something when they land on the page. No corporate coldness, no empty sections, no skeleton layouts. Design as if a real person's business depends on this page converting today.
 
-6. HERO SECTION — ALL of these elements are required, every time:
-- H1 headline: outcome-focused, specific, and compelling — never generic filler
-- Subheadline: 1–2 sentences expanding the promise
-- 2–3 bullet points stating what the visitor will learn, get, or achieve (written in full)
-- CTA button with real action text matching the goal (e.g. "Save My Seat", "Get Instant Access", "Apply Now") — never "Click Here" or "Submit"
-- Image placeholder for a hero image (lifestyle, speaker, or product shot)
+5. MANDATORY IMAGE PLACEHOLDERS — every page must include ALL of the following:
+- Coach image: placed prominently in the hero (split layout on desktop, image right / text left) — label it "IMAGE: Coach headshot or lifestyle photo - confident, warm, looking at camera"
+- Client avatar image: placed in the about-the-audience or who-this-is-for section — label it "IMAGE: Client avatar - [describe the target audience in a relatable moment, e.g. woman over 40 at laptop, looking frustrated but hopeful]"
+- Transformation image: placed mid-page near a CTA or results section — label it "IMAGE: Transformation - [describe the outcome, e.g. woman celebrating at laptop, arms raised, big smile]"
+- Testimonial avatars: one small circular placeholder per testimonial — label each "IMAGE: Testimonial avatar - [testimonial name]"
+Use the img-placeholder div format above for all of these. Every page must have a minimum of 4 image placeholders.
 
-7. BENEFITS / FEATURES SECTION — ALL of these elements are required, every time:
-- Section headline (e.g. "Here's What You'll Learn" or "Everything Included")
-- Minimum 3 cards or items — each card MUST contain: an icon or emoji, a bold title (3–6 words), AND 2 full sentences of body copy written in niche-specific language
-- No card may contain only an icon or only a title — body copy is mandatory on every single card
+6. HERO SECTION — ALL of these are required, every time:
+- A bold emotional H1 headline that speaks directly to the visitor's pain or desire — specific to the niche, never generic
+- A subheadline with specificity: who this is for, what they'll get, and why now (1–2 sentences)
+- The coach image in a split layout (text left, image right on desktop — stacked on mobile)
+- 3 bullet points of specific outcomes the visitor will achieve — written in full, no vague filler
+- A CTA button in the primary brand colour with compelling, action-specific text (e.g. "Save My Seat", "Yes — I Want In", "Start My Transformation") — never "Click Here" or "Submit"
 
-8. TESTIMONIALS SECTION — ALL of these elements are required, every time:
-- Minimum 2–3 full testimonial quotes written out completely — specific results, conversational tone, niche-appropriate language
-- A name and descriptor for each (e.g. "Sarah M., Health Coach" or "James T., Course Creator")
-- Star rating displayed visually (★★★★★) on each testimonial
-- Small avatar image placeholder per testimonial
+7. COPY RULES — mandatory throughout the entire page:
+- Write ALL copy in full — complete sentences, real words, real emotion. Nothing skeletal or placeholder-like.
+- Speak directly to the client avatar's pain points and desires. Use "you" language throughout.
+- Every testimonial must be a full 2–3 sentence quote with a real-sounding name, a descriptor (e.g. "Health Coach, Brisbane"), and a specific result (e.g. "I went from 3 clients to 12 in 60 days")
+- Every benefits card must have a bold title AND 2–3 sentences of body copy in niche-specific language
+- The ONLY brackets permitted are [CLIENT NAME] and [BUSINESS NAME] — no other placeholder brackets anywhere on the page
 
-9. ABOUT / HOST SECTION — ALL of these elements are required, every time:
-- Headline introducing the host (e.g. "Meet Your Host" or "Hi, I'm [Name]")
-- 2–3 paragraphs of bio copy: who they are, their credentials, their results, and why they are uniquely qualified to help
-- Image placeholder for headshot or personal brand photo
+8. BENEFITS / FEATURES SECTION — ALL of these are required, every time:
+- Section headline that speaks to transformation or value (e.g. "Here's Everything You'll Learn" or "What's Waiting for You Inside")
+- Minimum 3 cards — each card MUST have: an icon or emoji, a bold title (3–6 words), AND 2–3 sentences of body copy in the client's niche language
+- No card may have only an icon or only a title — body copy is mandatory on every single card
 
-10. CTA SECTIONS: Every standalone call-to-action section must include a headline creating urgency or desire, 1–2 sentences of supporting copy, and a button with specific action text — never generic filler.
+9. TESTIMONIALS SECTION — ALL of these are required, every time:
+- Minimum 2–3 full written testimonials with specific results, conversational tone, and niche-appropriate language
+- Name and descriptor per testimonial (e.g. "Sarah M., Health Coach" or "James T., Online Business Owner")
+- ★★★★★ star rating displayed visually on each
+- Small circular avatar image placeholder per testimonial
 
-11. COLOURS — STRICT RULES:
-- ALL buttons on the page must use the palette primary colour as background — never use blue, green, or any colour not in the palette
+10. ABOUT / HOST SECTION — ALL of these are required, every time:
+- Warm, personal headline (e.g. "Hi, I'm [Name]" or "Meet Your Coach")
+- 2–3 paragraphs of bio copy: who they are, what they've experienced, their credentials and results, and why they are the right person to help this specific audience
+- Coach image placeholder (headshot or personal brand photo)
+
+11. CTA SECTIONS: Every standalone CTA section must have a headline with urgency or desire, 1–2 sentences of supporting copy, and a large button with specific action text. Buttons: palette.primary background, border-radius:40px, padding:16px 40px, font-weight:700, color:#fff.
+
+12. DESIGN RULES:
+- Use bold typography contrasts — large impactful headlines paired with smaller supporting text
+- Use the brand palette creatively — gradient hero backgrounds, coloured section panels, not just white everywhere
+- Alternate section backgrounds to create visual rhythm (background → secondary → background, etc.)
+- Add visual interest in the hero with a subtle gradient overlay, soft shape, or pattern behind the text
+- Make CTA buttons large, bold, and impossible to miss — they must visually pop off the page
+- The page must look like it was designed by a professional agency and be ready to convert visitors today
+
+13. COLOURS — STRICT RULES:
+- ALL buttons must use the palette primary colour as background — never blue, green, or any off-palette colour
 - ALL links and accents must use palette colours only
 - Section background alternation: use palette.background and palette.secondary only
 - Never invent colours not in the palette
 - No random white circles, grey boxes, or decorative shapes in unspecified colours
 
-12. CTA BUTTONS: palette.primary as background, border-radius:40px, padding:16px 40px, font-weight:700, color:#fff.
-
-13. SECTIONS — DESIGN QUALITY: Design with genuine creative flair. Each section should feel purposeful and distinct. Use:
-- Full-bleed gradient hero with large headline and CTA button
-- Diagonal or curved section dividers (clip-path or SVG)
-- Dark testimonial strips contrasting with light sections
-- Bold stat/number blocks (e.g. "500+ students transformed", "10 years experience")
-- Card grids for benefits or features
-- Countdown timer visual (static, styled) where relevant
-- Video embed placeholder (styled black box with play button overlay) where relevant
-- Speaker/host bio section with image placeholder
-- Social proof logos row where relevant
-
-14. IMAGES — MANDATORY: Every page MUST have at least 3–4 image placeholders spread throughout:
-- Hero section: full-width or split-layout hero image (lifestyle, product, or speaker photo)
-- About/host section: headshot or personal brand photo
-- Mid-page: supporting lifestyle or result image
-- Testimonials: small avatar placeholder per testimonial
-Use the img-placeholder div format specified above for ALL of these. Label them descriptively.
+14. SECTIONS — use these proven section types, in order, and make each one count:
+- Full-bleed hero with split layout (text left, coach image right)
+- Social proof bar (logos, a stat, or a single powerful credibility line)
+- Benefits / what you'll get grid (3+ cards with full copy)
+- Testimonials strip (use a dark or coloured background for contrast)
+- About / meet your coach section
+- Mid-page CTA section
+- FAQ section (visual only — first item shown open)
+- Final CTA section with urgency copy
 
 15. MOBILE: Include a <style> block with @media (max-width: 768px) rules. Columns stack, font sizes reduce, padding tightens.
 
@@ -224,7 +236,7 @@ Use the img-placeholder div format specified above for ALL of these. Label them 
 
 17. MULTI-PAGE: Each page is a complete standalone HTML document. They share the same palette and fonts but are independent files.
 
-FINAL QUALITY CHECK — before outputting the JSON, review your HTML and confirm: Does every section have a real headline and body copy? Does every card have a title AND 2 sentences of body copy? Does every button have specific action text? Does this page look like a real professional marketing page that could go live today? If the answer to any of these is no, fix it before outputting.`;
+FINAL QUALITY CHECK — before outputting the JSON, ask yourself: Does every section have a real headline and full body copy? Does every benefits card have 2–3 sentences? Are all 4 image placeholder types present? Does every button have specific action text? Does this page feel warm, human, and ready to convert? If the answer to any of these is no, fix it before outputting.`;
 
 // ─── Prompts ──────────────────────────────────────────────────────────────────
 const PROMPTS = [
